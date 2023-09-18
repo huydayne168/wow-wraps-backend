@@ -9,6 +9,9 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const adminRouter = require("./routers/admin-router");
+const {
+    refreshTokenController,
+} = require("./controllers/refreshToken-controller");
 
 /////// Middlewares:
 app.use(cors());
@@ -16,8 +19,10 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.get("/refresh", refreshTokenController);
+
 // admin router:
-app.use("/api/admin", adminRouter);
+app.use("/admin", adminRouter);
 
 // error handling:
 app.use((error, req, res, next) => {

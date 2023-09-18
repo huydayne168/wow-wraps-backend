@@ -15,7 +15,7 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    avatar: {
+    phoneNumber: {
         type: String,
         required: true,
     },
@@ -27,9 +27,23 @@ const userSchema = new Schema({
         type: Array,
         required: true,
     },
-    isAdmin: {
-        type: Boolean,
-        required: true,
+    roles: {
+        user: {
+            type: String,
+            required: false,
+        },
+        counselor: {
+            type: String,
+            required: false,
+        },
+        admin: {
+            type: String,
+            required: false,
+        },
+    },
+    refreshToken: {
+        type: String,
+        required: false,
     },
 });
 
