@@ -43,3 +43,15 @@ exports.addNewProduct = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.getAllProducts = async (req, res, next) => {
+    try {
+        const allProducts = await Product.find();
+        console.log(allProducts);
+        if (allProducts) {
+            return res.status(200).json(allProducts);
+        }
+    } catch (error) {
+        next(error);
+    }
+};

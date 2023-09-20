@@ -7,6 +7,7 @@ const { body } = require("express-validator");
 const adminController = require("../controllers/admin-controller");
 const { loginHandler } = require("../controllers/login-controller");
 const { getAnUser } = require("../controllers/user-controller");
+const { logoutController } = require("../controllers/logout-controller");
 // post sign up admin account:
 router.post(
     "/sign-up",
@@ -38,5 +39,7 @@ router.post(
 );
 
 router.get("/get-user", getAnUser);
+
+router.get("/logout", logoutController);
 
 module.exports = router;

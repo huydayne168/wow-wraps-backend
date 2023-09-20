@@ -7,14 +7,14 @@ exports.verifyJWT = (req, res, next) => {
         const accessToken = req.headers.authorization.split(" ")[1];
         jwt.verify(accessToken, env.ACCESS_TOKEN, (error, decoded) => {
             if (error) {
-                return res.sendStatus(403);
+                return res.status(403).json({ message: "not same token" });
             }
-            console.log("oke");
+            console.log(decoded.UserInfo);
             req.user = decoded.UserInfo.email;
             req.roles = decoded.UserInfo.roles;
             next();
         });
     } else {
-        res.sendStatus(403);
+        res.status(403).json({ message: "no authentication header" });
     }
 };

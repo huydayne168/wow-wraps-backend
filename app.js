@@ -42,8 +42,6 @@ app.get("/refresh", refreshTokenController);
 // admin router:
 app.use("/admin", adminRouter);
 
-// verify JWT access token (protect all middle ware after this)
-app.use(verifyJWT);
 // product router:
 app.use("/api/product", productRouter);
 // tag router:

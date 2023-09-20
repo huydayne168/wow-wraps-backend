@@ -26,7 +26,6 @@ exports.loginHandler = async (req, res, next) => {
         if (!foundedUser) {
             return res.status(401).json({ emailErr: "Incorrect email!" });
         }
-        console.log(foundedUser);
 
         const matchPassword = await bcryptjs.compare(
             password,
@@ -68,7 +67,6 @@ exports.loginHandler = async (req, res, next) => {
         await foundedUser.save();
 
         // store refresh token in cookie:
-        console.log(refreshToken);
         res.cookie("jwt", refreshToken, {
             httpOnly: true,
             secure: true,
