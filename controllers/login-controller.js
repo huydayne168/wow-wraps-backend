@@ -68,10 +68,11 @@ exports.loginHandler = async (req, res, next) => {
         await foundedUser.save();
 
         // store refresh token in cookie:
+        console.log(refreshToken);
         res.cookie("jwt", refreshToken, {
             httpOnly: true,
-            sameSite: "None",
             secure: true,
+            sameSite: "None",
             maxAge: 24 * 60 * 60 * 1000,
         });
 
@@ -79,6 +80,6 @@ exports.loginHandler = async (req, res, next) => {
         res.json({ userInfo: foundedUser, accessToken });
     } catch (error) {
         console.log(error, "catch error in login controller");
-        next(error);
+        res.sendStatus(401);
     }
 };

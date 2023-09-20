@@ -1,11 +1,7 @@
 const User = require("../models/User");
 
-const bcryptjs = require("bcryptjs");
-
 require("dotenv").config();
 const { env } = require("process");
-
-const { validationResult } = require("express-validator");
 
 const jwt = require("jsonwebtoken");
 
@@ -14,10 +10,13 @@ exports.refreshTokenController = async (req, res, next) => {
     const cookies = req.cookies;
     if (!cookies?.jwt) return res.sendStatus(401);
     const refreshToken = cookies.jwt;
+    console.log(refreshToken);
 
-    const currentUser = User.findOne({
+    const currentUser = await User.findOne({
         refreshToken,
     });
+
+    console.log(currentUser);
 
     if (!currentUser) {
         return res.sendStatus(403); //Forbidden
@@ -28,11 +27,11 @@ exports.refreshTokenController = async (req, res, next) => {
             return res.sendStatus(403);
         }
 
-        const userRoles = Object.values(foundedUser.roles);
+        const userRoles = Object.values(currentUser.roles);
         const accessToken = jwt.sign(
             {
                 UserInfo: {
-                    email: foundedUser.email,
+                    email: currentUser.email,
                     roles: userRoles,
                 },
             },

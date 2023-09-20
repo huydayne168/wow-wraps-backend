@@ -2,14 +2,19 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { env } = require("process");
 
-exports.verifyJWT = async (req, res, next) => {
-    const accessToken = req.headers.Authentication.split()[1];
-    jwt.verify(accessToken, env.ACCESS_TOKEN, (error, decoded) => {
-        if (error || currentUser.email !== decoded.UserInfo.email) {
-            return res.sendStatus(403);
-        }
-        req.user = decoded.UserInfo.email;
-        req.roles = decoded.UserInfo.roles;
-        next();
-    });
+exports.verifyJWT = (req, res, next) => {
+    if (req.headers.authorization) {
+        const accessToken = req.headers.authorization.split(" ")[1];
+        jwt.verify(accessToken, env.ACCESS_TOKEN, (error, decoded) => {
+            if (error) {
+                return res.sendStatus(403);
+            }
+            console.log("oke");
+            req.user = decoded.UserInfo.email;
+            req.roles = decoded.UserInfo.roles;
+            next();
+        });
+    } else {
+        res.sendStatus(403);
+    }
 };
