@@ -20,6 +20,6 @@ router.post(
 );
 
 //  router to get all products:
-router.get("/get-all-products", productController.getAllProducts);
+router.get("/get-products", productController.getProducts);
 
 module.exports = router;

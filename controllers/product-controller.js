@@ -44,12 +44,28 @@ exports.addNewProduct = async (req, res, next) => {
     }
 };
 
-exports.getAllProducts = async (req, res, next) => {
+function applyFilters(products, { _idQuery, nameQuery }) {
+    const filteredProducts = [];
+
+    for (const product of products) {
+        if (_idQuery && !product._id.toString().includes(_idQuery)) {
+            continue;
+        }
+
+        if (nameQuery && !product.name.includes(nameQuery)) {
+            continue;
+        }
+
+        filteredProducts.push(product);
+    }
+    return filteredProducts;
+}
+exports.getProducts = async (req, res, next) => {
     try {
         const allProducts = await Product.find();
         console.log(allProducts);
         if (allProducts) {
-            return res.status(200).json(allProducts);
+            return res.status(200).json(applyFilters(allProducts, req.query));
         }
     } catch (error) {
         next(error);
