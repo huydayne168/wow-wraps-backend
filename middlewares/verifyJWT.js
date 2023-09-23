@@ -9,7 +9,6 @@ exports.verifyJWT = (req, res, next) => {
             if (error) {
                 return res.status(403).json({ message: "not same token" });
             }
-            console.log(decoded.UserInfo);
             req.user = decoded.UserInfo.email;
             req.roles = decoded.UserInfo.roles;
             next();

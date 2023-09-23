@@ -22,4 +22,20 @@ router.post(
 //  router to get all products:
 router.get("/get-products", productController.getProducts);
 
+// router to delete a product:
+router.delete(
+    "/delete-product",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.admin),
+    productController.deleteProduct
+);
+
+// route to edit an product:
+router.patch(
+    "/edit-product",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.admin),
+    productController.editProduct
+);
+
 module.exports = router;

@@ -10,13 +10,10 @@ exports.refreshTokenController = async (req, res, next) => {
     const cookies = req.cookies;
     if (!cookies?.jwt) return res.sendStatus(401);
     const refreshToken = cookies.jwt;
-    console.log(refreshToken);
 
     const currentUser = await User.findOne({
         refreshToken,
     });
-
-    console.log(currentUser);
 
     if (!currentUser) {
         return res.sendStatus(403); //Forbidden

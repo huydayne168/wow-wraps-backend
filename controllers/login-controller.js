@@ -58,7 +58,7 @@ exports.loginHandler = async (req, res, next) => {
             },
             env.REFRESH_TOKEN,
             {
-                expiresIn: "1d",
+                expiresIn: "3h",
             }
         );
 

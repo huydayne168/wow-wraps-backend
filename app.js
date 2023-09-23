@@ -14,6 +14,7 @@ const corsConfig = require("./configs/corsConfig");
 const adminRouter = require("./routers/admin-router");
 const productRouter = require("./routers/product-router");
 const tagRouter = require("./routers/tag-router");
+const categoryRouter = require("./routers/category-router");
 
 // import middlewares:
 const credentials = require("./middlewares/credential");
@@ -46,6 +47,9 @@ app.use("/admin", adminRouter);
 app.use("/api/product", productRouter);
 // tag router:
 app.use("/api/tag", tagRouter);
+
+// category router:
+app.use("/api/category", categoryRouter);
 
 // error handling:
 app.use((error, req, res, next) => {

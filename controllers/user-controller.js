@@ -14,12 +14,10 @@ exports.postSignup = async (req, res, next) => {
 
 exports.getAnUser = async (req, res, next) => {
     try {
-        console.log(req.query);
         const userId = req.query._id;
         const foundUser = await User.findOne({
             _id: userId,
         });
-        console.log(foundUser);
         if (!foundUser) return res.sendStatus(401);
         return res.status(200).json(foundUser);
     } catch (error) {

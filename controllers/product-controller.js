@@ -12,14 +12,12 @@ exports.addNewProduct = async (req, res, next) => {
         tags,
         image,
     } = req.body;
-    console.log(name);
 
     try {
         if (image) {
             const uploadRes = await cloudinary.uploader.upload(image, {
                 folder: "wow-wraps-product-images",
             });
-            console.log(uploadRes);
 
             if (uploadRes) {
                 const newProduct = new Product({
@@ -32,7 +30,7 @@ exports.addNewProduct = async (req, res, next) => {
                     shortDescription,
                     longDescription,
                     tags: tags,
-                    image: uploadRes,
+                    image: uploadRes.url,
                 });
                 await newProduct.save();
                 res.sendStatus(200);
@@ -44,6 +42,7 @@ exports.addNewProduct = async (req, res, next) => {
     }
 };
 
+// function to search products:
 function applyFilters(products, { _idQuery, nameQuery }) {
     const filteredProducts = [];
 
@@ -52,7 +51,10 @@ function applyFilters(products, { _idQuery, nameQuery }) {
             continue;
         }
 
-        if (nameQuery && !product.name.includes(nameQuery)) {
+        if (
+            nameQuery &&
+            !product.name.toLowerCase().includes(nameQuery.toLowerCase())
+        ) {
             continue;
         }
 
@@ -60,13 +62,56 @@ function applyFilters(products, { _idQuery, nameQuery }) {
     }
     return filteredProducts;
 }
+
 exports.getProducts = async (req, res, next) => {
     try {
         const allProducts = await Product.find();
-        console.log(allProducts);
         if (allProducts) {
             return res.status(200).json(applyFilters(allProducts, req.query));
         }
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.deleteProduct = async (req, res, next) => {
+    try {
+        const productId = req.query._id;
+        const result = await Product.deleteOne({ _id: productId });
+        return res.sendStatus(204);
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.editProduct = async (req, res, next) => {
+    try {
+        const {
+            _id,
+            name,
+            category,
+            amount,
+            price,
+            shortDescription,
+            longDescription,
+            tags,
+            image,
+        } = req.body;
+        const foundedProduct = await Product.findOne({ _id: _id });
+
+        // update data:
+        foundedProduct.name = name;
+        foundedProduct.category = category;
+        foundedProduct.amount = amount;
+        foundedProduct.price = price;
+        foundedProduct.shortDescription = shortDescription;
+        foundedProduct.longDescription = longDescription;
+        foundedProduct.tags = tags;
+        foundedProduct.image = image;
+
+        await foundedProduct.save();
+
+        return res.sendStatus(204);
     } catch (error) {
         next(error);
     }

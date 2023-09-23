@@ -1,31 +1,30 @@
 const express = require("express");
 
 const router = express.Router();
-const tagController = require("../controllers/tag-controller");
-const { verify } = require("jsonwebtoken");
+const categoryController = require("../controllers/category-controller");
 const { verifyJWT } = require("../middlewares/verifyJWT");
 const verifyRoles = require("../middlewares/verifyRoles");
 const ROLES_LIST = require("../configs/roles-list");
 
 router.get(
-    "/get-tags",
+    "/get-categories",
     verifyJWT,
     verifyRoles(ROLES_LIST.admin),
-    tagController.getTags
+    categoryController.getCategories
 );
 
 router.post(
-    "/add-tag",
+    "/add-category",
     verifyJWT,
     verifyRoles(ROLES_LIST.admin),
-    tagController.addTag
+    categoryController.addCategory
 );
 
 router.delete(
-    "/delete-tag",
+    "/delete-category",
     verifyJWT,
     verifyRoles(ROLES_LIST.admin),
-    tagController.deleteTag
+    categoryController.deleteCategory
 );
 
 module.exports = router;
