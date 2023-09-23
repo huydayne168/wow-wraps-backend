@@ -44,7 +44,9 @@ exports.postSignup = async (req, res, next) => {
                     phoneNumber,
                     cart: [],
                     checkout: [],
-                    roles: ROLES_LIST,
+                    roles: {
+                        admin: ROLES_LIST.admin,
+                    },
                 });
 
                 await newAdmin.save();

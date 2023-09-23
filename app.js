@@ -12,6 +12,7 @@ const cookieParser = require("cookie-parser");
 const corsConfig = require("./configs/corsConfig");
 // import routers:
 const adminRouter = require("./routers/admin-router");
+const userRouter = require("./routers/user-router");
 const productRouter = require("./routers/product-router");
 const tagRouter = require("./routers/tag-router");
 const categoryRouter = require("./routers/category-router");
@@ -42,6 +43,9 @@ app.get("/refresh", refreshTokenController);
 
 // admin router:
 app.use("/admin", adminRouter);
+
+// user router:
+app.use("/user", userRouter);
 
 // product router:
 app.use("/api/product", productRouter);
