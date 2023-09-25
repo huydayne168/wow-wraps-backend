@@ -30,6 +30,7 @@ exports.postSignup = async (req, res, next) => {
         const phoneNumber = req.body.phoneNumber;
         const verifyCode = req.body.verifyCode;
 
+        // when user send data that has verifyCode:
         if (verifyCode) {
             if (Number(verifyCode) === randomCode) {
                 // save user here:
@@ -44,7 +45,7 @@ exports.postSignup = async (req, res, next) => {
                     cart: [],
                     checkout: [],
                     roles: {
-                        admin: ROLES_LIST.admin,
+                        user: ROLES_LIST.user,
                     },
                 });
 

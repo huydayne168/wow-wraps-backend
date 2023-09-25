@@ -6,12 +6,7 @@ const { verifyJWT } = require("../middlewares/verifyJWT");
 const verifyRoles = require("../middlewares/verifyRoles");
 const ROLES_LIST = require("../configs/roles-list");
 
-router.get(
-    "/get-categories",
-    verifyJWT,
-    verifyRoles(ROLES_LIST.admin),
-    categoryController.getCategories
-);
+router.get("/get-categories", categoryController.getCategories);
 
 router.post(
     "/add-category",

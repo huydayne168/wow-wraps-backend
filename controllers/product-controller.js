@@ -43,9 +43,9 @@ exports.addNewProduct = async (req, res, next) => {
 };
 
 // function to search products:
-function applyFilters(products, { _idQuery, nameQuery }) {
+function applyFilters(products, { _idQuery, nameQuery, category, page }) {
     const filteredProducts = [];
-
+    const curPage = Number(page);
     for (const product of products) {
         if (_idQuery && !product._id.toString().includes(_idQuery)) {
             continue;
@@ -58,9 +58,26 @@ function applyFilters(products, { _idQuery, nameQuery }) {
             continue;
         }
 
+        if (
+            category !== "All" &&
+            product.category.toLowerCase() !== category.toLowerCase()
+        ) {
+            continue;
+        }
+
         filteredProducts.push(product);
     }
-    return filteredProducts;
+    const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredProducts.length;
+    if (isLastPage) {
+        return {
+            products: filteredProducts.slice(
+                (curPage - 1) * 5,
+                (curPage - 1) * 5 + 5
+            ),
+            isLastPage: true,
+        };
+    }
+    return filteredProducts.slice((curPage - 1) * 5, (curPage - 1) * 5 + 5);
 }
 
 exports.getProducts = async (req, res, next) => {

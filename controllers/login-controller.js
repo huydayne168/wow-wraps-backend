@@ -14,7 +14,7 @@ exports.loginHandler = async (req, res, next) => {
     try {
         const email = req.body.email;
         const password = req.body.password;
-
+        console.log(password);
         const inputError = validationResult(req);
         if (!inputError.isEmpty()) {
             return res.status(400).json({
@@ -31,6 +31,7 @@ exports.loginHandler = async (req, res, next) => {
             password,
             foundedUser.password
         );
+
         if (!matchPassword) {
             return res.status(401).json({ passwordErr: "Incorrect password!" });
         }

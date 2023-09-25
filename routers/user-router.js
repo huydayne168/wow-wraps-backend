@@ -6,6 +6,7 @@ const verifyRoles = require("../middlewares/verifyRoles");
 const ROLES_LIST = require("../configs/roles-list");
 const userController = require("../controllers/user-controller");
 const { body } = require("express-validator");
+const { loginHandler } = require("../controllers/login-controller");
 
 // post create new user:
 router.post(
@@ -28,6 +29,9 @@ router.post(
     userController.postSignup
 );
 
+// route for user to log in:
+router.post("/login", loginHandler);
+
 // route to get all user here:
 router.get(
     "/get-users",
@@ -35,5 +39,8 @@ router.get(
     verifyRoles(ROLES_LIST.admin, ROLES_LIST.counselor),
     userController.getUsers
 );
+
+// router to get an user:
+router.get("/get-user", userController.getAnUser);
 
 module.exports = router;
