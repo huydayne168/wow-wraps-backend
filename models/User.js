@@ -19,10 +19,22 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    cart: {
-        type: Array,
-        required: true,
-    },
+    cart: [
+        {
+            _id: {
+                type: Schema.Types.ObjectId,
+            },
+            product: {
+                type: Schema.Types.ObjectId,
+                required: true,
+                ref: "Product",
+            },
+            quantity: {
+                type: Number,
+                required: true,
+            },
+        },
+    ],
     checkout: {
         type: Array,
         required: true,

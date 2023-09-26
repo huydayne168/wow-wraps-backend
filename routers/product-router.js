@@ -39,4 +39,15 @@ router.patch(
 // route to get related products:
 router.get("/related-products", productController.getRelatedProducts);
 
+// route to let user add a review:
+router.post(
+    "/add-review",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.user),
+    productController.addReview
+);
+
+// route to get a product's reviews:
+router.get("/get-reviews", productController.getReviews);
+
 module.exports = router;

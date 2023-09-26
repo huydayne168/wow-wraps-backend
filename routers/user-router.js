@@ -47,4 +47,36 @@ router.get(
 // router to get an user:
 router.get("/get-user", userController.getAnUser);
 
+// route to get user's cart:
+router.get(
+    "/get-cart",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.user),
+    userController.getCart
+);
+
+// router to add a product to cart:
+router.post(
+    "/add-to-cart",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.user),
+    userController.addToCart
+);
+
+// router to update cart:
+router.post(
+    "/update-cart",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.user),
+    userController.updateCart
+);
+
+// router to delete a product to cart:
+router.post(
+    "/delete-cart",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.user),
+    userController.deleteCart
+);
+
 module.exports = router;

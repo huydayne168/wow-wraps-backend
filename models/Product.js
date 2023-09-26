@@ -35,10 +35,27 @@ const productSchema = new Schema({
         type: Array,
         required: true,
     },
-    reviews: {
-        type: Array,
-        ref: Review,
-    },
+    reviews: [
+        {
+            date: {
+                type: String,
+                required: true,
+            },
+            comment: {
+                type: String,
+                required: true,
+            },
+            ratePoint: {
+                type: Number,
+                required: true,
+            },
+            user: {
+                type: Schema.Types.ObjectId,
+                required: true,
+                ref: "User",
+            },
+        },
+    ],
 
     image: {
         type: String,

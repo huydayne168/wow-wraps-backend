@@ -170,6 +170,7 @@ exports.getUsers = async (req, res, next) => {
     }
 };
 
+// get an user:
 exports.getAnUser = async (req, res, next) => {
     try {
         const userId = req.query._id;
@@ -180,6 +181,85 @@ exports.getAnUser = async (req, res, next) => {
         return res.status(200).json(foundUser);
     } catch (error) {
         console.log(error);
+        next(error);
+    }
+};
+
+// GET CART
+exports.getCart = async (req, res, next) => {
+    try {
+        const userId = req.query.userId;
+        const user = await User.findById(userId).populate("cart.product");
+        console.log(userId);
+        if (!user) return res.sendStatus(403);
+        return res.json(user.cart);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// ADD PRODUCT TO CART:
+exports.addToCart = async (req, res, next) => {
+    try {
+        const { userId, product: productId, quantity } = req.body;
+        const user = await User.findById(userId);
+        if (!user) return res.sendStatus(403);
+
+        // Is this product already exist in cart?
+        const isExist = user.cart.some(
+            (cartItem) => cartItem.productId === productId
+        );
+        if (isExist) {
+            user.cart.map((cartItem) => {
+                if (cartItem.product === productId) {
+                    cartItem.quantity += quantity;
+                }
+                return cartItem;
+            });
+        } else {
+            user.cart.push({
+                product: productId,
+                quantity,
+            });
+        }
+
+        await user.save();
+        return res.sendStatus(204);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// UPDATE CART :
+exports.updateCart = async (req, res, next) => {
+    try {
+        const newCart = req.body.cart;
+        const userId = req.body.userId;
+        const user = await User.findById(userId);
+        if (!user) return res.sendStatus(403);
+        user.cart = newCart;
+        await user.save();
+        return res.sendStatus(204);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// DELETE ITEM IN CART:
+exports.deleteCart = async (req, res, next) => {
+    try {
+        const cartId = req.body.cartId;
+        const userId = req.body.userId;
+        const user = await User.findById(userId);
+        if (!user) return res.sendStatus(403);
+        const newCart = user.cart.filter(
+            (item) => item._id.toString() !== cartId
+        );
+        user.cart = newCart;
+        await user.save();
+        console.log(user.cart);
+        return res.sendStatus(204);
+    } catch (error) {
         next(error);
     }
 };

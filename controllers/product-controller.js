@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const User = require("../models/User");
 const cloudinary = require("../utils/cloudinary");
 // create new product here:
 exports.addNewProduct = async (req, res, next) => {
@@ -177,6 +178,48 @@ exports.editProduct = async (req, res, next) => {
 
         return res.sendStatus(204);
     } catch (error) {
+        next(error);
+    }
+};
+
+// ADD REVIEW:
+exports.addReview = async (req, res, next) => {
+    try {
+        const { productId, comment, date, ratePoint, user: userId } = req.body;
+        console.log(ratePoint);
+        const product = await Product.findById(productId);
+        const user = await User.findById(userId);
+        if (!product) return res.sendStatus(404);
+        product.reviews.push({
+            date,
+            comment,
+            ratePoint,
+            user,
+        });
+        console.log(user);
+        product.rate = Math.round(
+            product.reviews.reduce((init, next) => init + next.ratePoint, 0) /
+                product.reviews.length
+        );
+        await product.save();
+        return res.sendStatus(200);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// GET REVIEWS:
+exports.getReviews = async (req, res, next) => {
+    try {
+        const { productId } = req.query;
+        const product = await Product.findById(productId).populate(
+            "reviews.user"
+        );
+        // const reviews = await product.reviews.populate("reviews");
+        if (!product) return res.sendStatus(404);
+        return res.status(200).json(product.reviews);
+    } catch (error) {
+        console.log(error);
         next(error);
     }
 };
