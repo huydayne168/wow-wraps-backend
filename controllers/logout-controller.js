@@ -1,5 +1,6 @@
 const User = require("../models/User");
 
+// Log out for all king of user:
 exports.logoutController = async (req, res, next) => {
     const cookies = req.cookies;
     if (!cookies.jwt) return res.sendStatus(204);

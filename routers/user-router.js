@@ -7,6 +7,7 @@ const ROLES_LIST = require("../configs/roles-list");
 const userController = require("../controllers/user-controller");
 const { body } = require("express-validator");
 const { loginHandler } = require("../controllers/login-controller");
+const { logoutController } = require("../controllers/logout-controller");
 
 // post create new user:
 router.post(
@@ -31,6 +32,9 @@ router.post(
 
 // route for user to log in:
 router.post("/login", loginHandler);
+
+// route ti log out:
+router.post("/logout", logoutController);
 
 // route to get all user here:
 router.get(

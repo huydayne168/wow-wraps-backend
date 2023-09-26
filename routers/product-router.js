@@ -36,4 +36,7 @@ router.patch(
     productController.editProduct
 );
 
+// route to get related products:
+router.get("/related-products", productController.getRelatedProducts);
+
 module.exports = router;

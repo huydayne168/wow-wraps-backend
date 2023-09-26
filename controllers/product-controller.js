@@ -43,7 +43,18 @@ exports.addNewProduct = async (req, res, next) => {
 };
 
 // function to search products:
-function applyFilters(products, { _idQuery, nameQuery, category, page }) {
+function applyFilters(
+    products,
+    {
+        _idQuery,
+        nameQuery,
+        category,
+        sortRate,
+        sortLowPrice,
+        sortHighPrice,
+        page,
+    }
+) {
     const filteredProducts = [];
     const curPage = Number(page);
     for (const product of products) {
@@ -60,6 +71,7 @@ function applyFilters(products, { _idQuery, nameQuery, category, page }) {
 
         if (
             category !== "All" &&
+            category &&
             product.category.toLowerCase() !== category.toLowerCase()
         ) {
             continue;
@@ -67,7 +79,24 @@ function applyFilters(products, { _idQuery, nameQuery, category, page }) {
 
         filteredProducts.push(product);
     }
+    console.log(sortRate && JSON.parse(sortRate));
     const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredProducts.length;
+    if (sortRate && JSON.parse(sortRate)) {
+        filteredProducts.sort(
+            (productA, productB) =>
+                Number(productB.rate) - Number(productA.rate)
+        );
+    } else if (sortLowPrice && JSON.parse(sortLowPrice)) {
+        filteredProducts.sort(
+            (productA, productB) =>
+                Number(productA.price) - Number(productB.price)
+        );
+    } else if (sortHighPrice && JSON.parse(sortHighPrice)) {
+        filteredProducts.sort(
+            (productA, productB) =>
+                Number(productB.price) - Number(productA.price)
+        );
+    }
     if (isLastPage) {
         return {
             products: filteredProducts.slice(
@@ -86,6 +115,24 @@ exports.getProducts = async (req, res, next) => {
         if (allProducts) {
             return res.status(200).json(applyFilters(allProducts, req.query));
         }
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getRelatedProducts = async (req, res, next) => {
+    try {
+        const productId = req.query.productId;
+        const category = req.query.category;
+        const products = await Product.find();
+        const relatedProducts = products.filter((product) => {
+            return (
+                product.category === category &&
+                product._id.toString() !== productId
+            );
+        });
+
+        return res.status(200).json(relatedProducts);
     } catch (error) {
         next(error);
     }
