@@ -57,6 +57,7 @@ function applyFilters(
     }
 ) {
     const filteredProducts = [];
+    console.log(page, category);
     const curPage = Number(page);
     for (const product of products) {
         if (_idQuery && !product._id.toString().includes(_idQuery)) {
@@ -70,22 +71,22 @@ function applyFilters(
             continue;
         }
 
-        if (
-            category !== "All" &&
-            category &&
-            product.category.toLowerCase() !== category.toLowerCase()
-        ) {
+        if (category !== "All" && category) {
             continue;
         }
 
         filteredProducts.push(product);
     }
-    console.log(sortRate && JSON.parse(sortRate));
     const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredProducts.length;
     if (sortRate && JSON.parse(sortRate)) {
         filteredProducts.sort(
             (productA, productB) =>
                 Number(productB.rate) - Number(productA.rate)
+        );
+    } else if (sortRate && !JSON.parse(sortRate)) {
+        filteredProducts.sort(
+            (productA, productB) =>
+                Number(productA.rate) - Number(productB.rate)
         );
     } else if (sortLowPrice && JSON.parse(sortLowPrice)) {
         filteredProducts.sort(

@@ -16,6 +16,7 @@ const userRouter = require("./routers/user-router");
 const productRouter = require("./routers/product-router");
 const tagRouter = require("./routers/tag-router");
 const categoryRouter = require("./routers/category-router");
+const checkoutRouter = require("./routers/checkout-router");
 
 // import middlewares:
 const credentials = require("./middlewares/credential");
@@ -54,6 +55,9 @@ app.use("/api/tag", tagRouter);
 
 // category router:
 app.use("/api/category", categoryRouter);
+
+// category router:
+app.use("/api/checkout", checkoutRouter);
 
 // error handling:
 app.use((error, req, res, next) => {

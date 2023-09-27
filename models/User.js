@@ -35,10 +35,12 @@ const userSchema = new Schema({
             },
         },
     ],
-    checkout: {
-        type: Array,
-        required: true,
-    },
+    checkout: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Checkout",
+        },
+    ],
     roles: {
         user: {
             type: String,
