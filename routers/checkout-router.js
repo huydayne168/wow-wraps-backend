@@ -17,4 +17,11 @@ router.post(
     checkoutController.addCheckout
 );
 
+// route to get checkouts:
+router.get(
+    "/get-checkouts",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.admin),
+    checkoutController.getCheckouts
+);
 module.exports = router;

@@ -14,8 +14,6 @@ exports.addCheckout = async (req, res, next) => {
             status,
         } = req.body;
 
-        console.log(paymentMethod);
-
         const newCheckout = new Checkout({
             date,
             user,
@@ -36,6 +34,108 @@ exports.addCheckout = async (req, res, next) => {
         res.sendStatus(204);
     } catch (error) {
         console.log(error);
+        next(error);
+    }
+};
+
+// get checkouts:
+function applyFilters(
+    checkouts,
+    {
+        page,
+        _idQuery,
+        userQuery,
+        productsQuery,
+        phoneNumberQuery,
+        sortDate,
+        sortPaymentMethod,
+        sortStatus,
+    }
+) {
+    const filteredCheckouts = [];
+    for (const checkout of checkouts) {
+        if (_idQuery && !checkout._id.toString().includes(_idQuery)) {
+            continue;
+        }
+
+        if (
+            userQuery &&
+            !checkout.user.userName
+                .toLowerCase()
+                .includes(userQuery.toLowerCase())
+        ) {
+            continue;
+        }
+
+        if (
+            productsQuery &&
+            !checkout.products.some((item) =>
+                item.product.name.toLowerCase().includes(productsQuery)
+            )
+        ) {
+            continue;
+        }
+
+        if (
+            phoneNumberQuery &&
+            !checkout.phoneNumber.toLowerCase().includes(phoneNumberQuery)
+        ) {
+            continue;
+        }
+
+        if (
+            sortPaymentMethod &&
+            !checkout.paymentMethod === sortPaymentMethod
+        ) {
+            continue;
+        }
+
+        if (sortStatus && !checkout.status === sortStatus) {
+            continue;
+        }
+
+        filteredCheckouts.push(checkout);
+    }
+    if (sortDate && JSON.parse(sortDate)) {
+        filteredCheckouts.sort((checkoutA, checkoutB) => {
+            return (
+                checkoutA.createdAt.getTime() - checkoutB.createdAt.getTime()
+            );
+        });
+    }
+    // is the last page:
+    const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredCheckouts.length;
+    const curPage = Number(page);
+
+    if (isLastPage) {
+        return {
+            checkouts: filteredCheckouts.slice(
+                (curPage - 1) * 5,
+                (curPage - 1) * 5 + 5
+            ),
+            isLastPage: true,
+            totalCheckouts: filteredCheckouts.length,
+        };
+    }
+    return {
+        checkouts: filteredCheckouts.slice(
+            (curPage - 1) * 5,
+            (curPage - 1) * 5 + 5
+        ),
+        isLastPage: false,
+        totalCheckouts: filteredCheckouts.length,
+    };
+}
+
+exports.getCheckouts = async (req, res, next) => {
+    try {
+        const allCheckouts = await Checkout.find()
+            .populate("user")
+            .populate("products.product");
+        if (allCheckouts) {
+            return res.status(200).json(applyFilters(allCheckouts, req.query));
+        }
+    } catch (error) {
         next(error);
     }
 };

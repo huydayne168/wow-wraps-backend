@@ -251,6 +251,7 @@ exports.deleteCart = async (req, res, next) => {
         const cartId = req.body.cartId;
         const userId = req.body.userId;
         const user = await User.findById(userId);
+        console.log(cartId);
         if (!user) return res.sendStatus(403);
         const newCart = user.cart.filter(
             (item) => item._id.toString() !== cartId

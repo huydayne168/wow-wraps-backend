@@ -57,7 +57,6 @@ function applyFilters(
     }
 ) {
     const filteredProducts = [];
-    console.log(page, category);
     const curPage = Number(page);
     for (const product of products) {
         if (_idQuery && !product._id.toString().includes(_idQuery)) {
@@ -71,13 +70,16 @@ function applyFilters(
             continue;
         }
 
-        if (category !== "All" && category) {
+        if (
+            category !== "All" &&
+            category &&
+            product.category.toLowerCase() !== category.toLowerCase()
+        ) {
             continue;
         }
 
         filteredProducts.push(product);
     }
-    const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredProducts.length;
     if (sortRate && JSON.parse(sortRate)) {
         filteredProducts.sort(
             (productA, productB) =>
@@ -99,6 +101,8 @@ function applyFilters(
                 Number(productB.price) - Number(productA.price)
         );
     }
+    const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredProducts.length;
+
     if (isLastPage) {
         return {
             products: filteredProducts.slice(
@@ -106,9 +110,17 @@ function applyFilters(
                 (curPage - 1) * 5 + 5
             ),
             isLastPage: true,
+            totalProducts: filteredProducts.length,
         };
     }
-    return filteredProducts.slice((curPage - 1) * 5, (curPage - 1) * 5 + 5);
+    return {
+        products: filteredProducts.slice(
+            (curPage - 1) * 5,
+            (curPage - 1) * 5 + 5
+        ),
+        isLastPage: false,
+        totalProducts: filteredProducts.length,
+    };
 }
 
 exports.getProducts = async (req, res, next) => {
@@ -119,6 +131,7 @@ exports.getProducts = async (req, res, next) => {
         }
     } catch (error) {
         next(error);
+        console.log(error);
     }
 };
 
@@ -143,9 +156,19 @@ exports.getRelatedProducts = async (req, res, next) => {
 exports.deleteProduct = async (req, res, next) => {
     try {
         const productId = req.query._id;
-        const result = await Product.deleteOne({ _id: productId });
+        const carts = await User.find()
+            .populate("cart.product")
+            .select("cart.product -_id");
+        console.log(carts);
+        const usersHaveCart = carts.map((cart) => {
+            return [...cart.cart];
+        });
+        // check if the product that we want to delete exist in any cart?
+        console.log(usersHaveCart);
+        // const result = await Product.deleteOne({ _id: productId });
         return res.sendStatus(204);
     } catch (error) {
+        console.log(error);
         next(error);
     }
 };
