@@ -207,7 +207,7 @@ exports.addToCart = async (req, res, next) => {
 
         // Is this product already exist in cart?
         const isExist = user.cart.some(
-            (cartItem) => cartItem.productId === productId
+            (cartItem) => cartItem.product === productId
         );
         if (isExist) {
             user.cart.map((cartItem) => {

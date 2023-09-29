@@ -46,6 +46,11 @@ const checkoutSchema = new Schema(
             },
         ],
 
+        total: {
+            type: Number,
+            required: true,
+        },
+
         paymentMethod: {
             type: String,
             required: true,
@@ -53,6 +58,11 @@ const checkoutSchema = new Schema(
 
         status: {
             type: String,
+            enum: ["WAITING FOR PAYING", "PAID", "CANCELED"],
+            required: true,
+        },
+        isDeleted: {
+            type: Boolean,
             required: true,
         },
     },

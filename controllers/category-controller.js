@@ -20,11 +20,7 @@ exports.getCategories = async (req, res, next) => {
     try {
         const categoriesList = await Category.find();
         const categoryQuery = req.query.categoryQuery;
-        res.status(200).json(
-            applyFilter(categoriesList, categoryQuery).map(
-                (category) => category.name
-            )
-        );
+        res.status(200).json(applyFilter(categoriesList, categoryQuery));
     } catch (error) {
         next(error);
     }

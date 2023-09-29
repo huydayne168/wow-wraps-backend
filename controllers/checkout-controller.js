@@ -10,6 +10,7 @@ exports.addCheckout = async (req, res, next) => {
             address,
             phoneNumber,
             products,
+            total,
             paymentMethod,
             status,
         } = req.body;
@@ -21,8 +22,10 @@ exports.addCheckout = async (req, res, next) => {
             phoneNumber,
             address,
             products,
+            total,
             paymentMethod,
-            status,
+            status: status.toUpperCase(),
+            isDeleted: false,
         });
 
         await newCheckout.save();
@@ -50,6 +53,7 @@ function applyFilters(
         sortDate,
         sortPaymentMethod,
         sortStatus,
+        sortTotal,
     }
 ) {
     const filteredCheckouts = [];
@@ -96,11 +100,33 @@ function applyFilters(
 
         filteredCheckouts.push(checkout);
     }
-    if (sortDate && JSON.parse(sortDate)) {
+    if (sortDate) {
         filteredCheckouts.sort((checkoutA, checkoutB) => {
-            return (
-                checkoutA.createdAt.getTime() - checkoutB.createdAt.getTime()
+            console.log(
+                checkoutA.createdAt.getTime(),
+                checkoutB.createdAt.getTime()
             );
+            if (JSON.parse(sortDate)) {
+                return (
+                    checkoutB.createdAt.getTime() -
+                    checkoutA.createdAt.getTime()
+                );
+            } else {
+                return (
+                    checkoutA.createdAt.getTime() -
+                    checkoutB.createdAt.getTime()
+                );
+            }
+        });
+    }
+
+    if (sortTotal) {
+        filteredCheckouts.sort((checkoutA, checkoutB) => {
+            if (JSON.parse(sortTotal)) {
+                return checkoutB.total - checkoutA.total;
+            } else {
+                return checkoutA.total - checkoutB.total;
+            }
         });
     }
     // is the last page:
@@ -129,7 +155,7 @@ function applyFilters(
 
 exports.getCheckouts = async (req, res, next) => {
     try {
-        const allCheckouts = await Checkout.find()
+        const allCheckouts = await Checkout.find({ isDeleted: false })
             .populate("user")
             .populate("products.product");
         if (allCheckouts) {
@@ -137,5 +163,33 @@ exports.getCheckouts = async (req, res, next) => {
         }
     } catch (error) {
         next(error);
+    }
+};
+
+exports.updateCheckout = async (req, res, next) => {
+    try {
+        const checkoutId = req.body.checkoutId;
+        const status = req.body.status;
+        console.log(checkoutId, status);
+        const checkout = await Checkout.findById(checkoutId);
+        checkout.status = status;
+        await checkout.save();
+        return res.sendStatus(204);
+    } catch (error) {
+        next(error);
+        console.log(error);
+    }
+};
+
+exports.deleteCheckout = async (req, res, next) => {
+    try {
+        const checkoutId = req.body.checkoutId;
+        const checkout = await Checkout.findById(checkoutId);
+        checkout.isDeleted = true;
+        await checkout.save();
+        return res.sendStatus(204);
+    } catch (error) {
+        next(error);
+        console.log(error);
     }
 };

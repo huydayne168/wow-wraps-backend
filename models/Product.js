@@ -29,13 +29,17 @@ const productSchema = new Schema(
             required: true,
         },
         category: {
-            type: String,
+            type: Schema.Types.ObjectId,
             required: true,
+            ref: "Category",
         },
-        tags: {
-            type: Array,
-            required: true,
-        },
+        tags: [
+            {
+                type: Schema.Types.ObjectId,
+                required: true,
+                ref: "Tag",
+            },
+        ],
         reviews: [
             {
                 date: {
@@ -60,6 +64,10 @@ const productSchema = new Schema(
 
         image: {
             type: String,
+            required: true,
+        },
+        isDeleted: {
+            type: Boolean,
             required: true,
         },
     },

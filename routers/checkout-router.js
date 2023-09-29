@@ -24,4 +24,21 @@ router.get(
     verifyRoles(ROLES_LIST.admin),
     checkoutController.getCheckouts
 );
+
+// route to update checkout status:
+router.post(
+    "/update-checkout",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.admin),
+    checkoutController.updateCheckout
+);
+
+// route to delete checkout:
+router.delete(
+    "/delete-checkout",
+    verifyJWT,
+    verifyRoles(ROLES_LIST.admin),
+    checkoutController.deleteCheckout
+);
+
 module.exports = router;

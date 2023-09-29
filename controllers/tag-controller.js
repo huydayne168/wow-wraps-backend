@@ -20,9 +20,7 @@ exports.getTags = async (req, res, next) => {
     try {
         const tagsList = await Tag.find();
         const tagQuery = req.query.tagQuery;
-        res.status(200).json(
-            applyFilter(tagsList, tagQuery).map((tag) => tag.name)
-        );
+        res.status(200).json(applyFilter(tagsList, tagQuery));
     } catch (error) {
         next(error);
     }

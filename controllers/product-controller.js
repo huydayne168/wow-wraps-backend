@@ -32,6 +32,7 @@ exports.addNewProduct = async (req, res, next) => {
                     longDescription,
                     tags: tags,
                     image: uploadRes.url,
+                    isDeleted: false,
                 });
                 await newProduct.save();
                 res.sendStatus(200);
@@ -73,7 +74,7 @@ function applyFilters(
         if (
             category !== "All" &&
             category &&
-            product.category.toLowerCase() !== category.toLowerCase()
+            product.category._id.toLowerCase() !== category.toLowerCase()
         ) {
             continue;
         }
@@ -125,7 +126,10 @@ function applyFilters(
 
 exports.getProducts = async (req, res, next) => {
     try {
-        const allProducts = await Product.find();
+        const allProducts = await Product.find({ isDeleted: false })
+            .populate("category")
+            .populate("tags");
+        console.log(allProducts);
         if (allProducts) {
             return res.status(200).json(applyFilters(allProducts, req.query));
         }
@@ -156,16 +160,34 @@ exports.getRelatedProducts = async (req, res, next) => {
 exports.deleteProduct = async (req, res, next) => {
     try {
         const productId = req.query._id;
+        const deletedProduct = await Product.findById(productId);
+        console.log(deletedProduct);
         const carts = await User.find()
-            .populate("cart.product")
-            .select("cart.product -_id");
-        console.log(carts);
-        const usersHaveCart = carts.map((cart) => {
-            return [...cart.cart];
-        });
+            .populate({
+                path: "cart.product",
+                select: "cart.product._id",
+            })
+            .select("cart -_id");
+
+        const productsInCart = [
+            ...carts
+                .filter((cart) => cart.cart.length > 0)
+                .map((cart) => cart.cart)
+                .flat(),
+        ];
+        console.log(productsInCart);
         // check if the product that we want to delete exist in any cart?
-        console.log(usersHaveCart);
-        // const result = await Product.deleteOne({ _id: productId });
+        if (productsInCart) {
+            const isFailedToDelete = productsInCart.some(
+                (product) => product.product._id.toString() === productId
+            );
+            if (isFailedToDelete) {
+                return res.sendStatus(409);
+            }
+        }
+
+        deletedProduct.isDeleted = true;
+        const result = await deletedProduct.save();
         return res.sendStatus(204);
     } catch (error) {
         console.log(error);
