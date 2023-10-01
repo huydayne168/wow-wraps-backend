@@ -40,7 +40,7 @@ router.post("/logout", logoutController);
 router.get(
     "/get-users",
     verifyJWT,
-    verifyRoles(ROLES_LIST.admin, ROLES_LIST.counselor),
+    verifyRoles("admin"),
     userController.getUsers
 );
 
@@ -48,34 +48,29 @@ router.get(
 router.get("/get-user", userController.getAnUser);
 
 // route to get user's cart:
-router.get(
-    "/get-cart",
-    verifyJWT,
-    verifyRoles(ROLES_LIST.user),
-    userController.getCart
-);
+router.get("/get-cart", verifyJWT, verifyRoles("user"), userController.getCart);
 
 // router to add a product to cart:
 router.post(
     "/add-to-cart",
     verifyJWT,
-    verifyRoles(ROLES_LIST.user),
+    verifyRoles("user"),
     userController.addToCart
 );
 
 // router to update cart:
-router.post(
+router.patch(
     "/update-cart",
     verifyJWT,
-    verifyRoles(ROLES_LIST.user),
+    verifyRoles("user"),
     userController.updateCart
 );
 
 // router to delete a product to cart:
-router.post(
+router.delete(
     "/delete-cart",
     verifyJWT,
-    verifyRoles(ROLES_LIST.user),
+    verifyRoles("user"),
     userController.deleteCart
 );
 

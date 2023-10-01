@@ -39,20 +39,13 @@ const userSchema = new Schema(
                 ref: "Checkout",
             },
         ],
-        roles: {
-            user: {
-                type: String,
-                required: false,
-            },
-            counselor: {
-                type: String,
-                required: false,
-            },
-            admin: {
-                type: String,
-                required: false,
-            },
+
+        roleId: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: "Role",
         },
+
         refreshToken: {
             type: String,
             required: false,

@@ -94,7 +94,10 @@ function applyFilters(
             continue;
         }
 
-        if (sortStatus && !checkout.status === sortStatus) {
+        if (
+            sortStatus &&
+            !checkout.status.toUpperCase() === sortStatus.toUpperCase()
+        ) {
             continue;
         }
 
@@ -155,7 +158,7 @@ function applyFilters(
 
 exports.getCheckouts = async (req, res, next) => {
     try {
-        const allCheckouts = await Checkout.find({ isDeleted: false })
+        const allCheckouts = await Checkout.find()
             .populate("user")
             .populate("products.product");
         if (allCheckouts) {

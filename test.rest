@@ -1,0 +1,7 @@
+POST http://localhost:8000/api/role/add-role
+Content-Type: application/json
+
+{
+    "name": "user",
+    "description": "this is the role name user, it is for the normal users of the website"
+}

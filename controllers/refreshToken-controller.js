@@ -13,7 +13,7 @@ exports.refreshTokenController = async (req, res, next) => {
 
     const currentUser = await User.findOne({
         refreshToken,
-    });
+    }).populate("roleId");
 
     if (!currentUser) {
         return res.sendStatus(403); //Forbidden
@@ -24,12 +24,11 @@ exports.refreshTokenController = async (req, res, next) => {
             return res.sendStatus(403);
         }
 
-        const userRoles = Object.values(currentUser.roles);
         const accessToken = jwt.sign(
             {
                 UserInfo: {
                     email: currentUser.email,
-                    roles: userRoles,
+                    roleId: currentUser.roleId.name,
                 },
             },
             env.ACCESS_TOKEN,

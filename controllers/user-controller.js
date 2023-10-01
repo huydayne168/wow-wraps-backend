@@ -1,5 +1,5 @@
 const User = require("../models/User");
-
+const Role = require("../models/Role");
 const bcryptjs = require("bcryptjs");
 
 const sgMail = require("@sendgrid/mail");
@@ -36,7 +36,7 @@ exports.postSignup = async (req, res, next) => {
                 // save user here:
                 // hash password:
                 const hashedPassword = await bcryptjs.hash(password, 12);
-
+                const userRoleId = await Role.find({ name: "user" });
                 const newUser = new User({
                     userName,
                     password: hashedPassword,
@@ -44,9 +44,7 @@ exports.postSignup = async (req, res, next) => {
                     phoneNumber,
                     cart: [],
                     checkout: [],
-                    roles: {
-                        user: ROLES_LIST.user,
-                    },
+                    roleId: userRoleId,
                 });
 
                 await newUser.save();
@@ -129,10 +127,9 @@ exports.postSignup = async (req, res, next) => {
 // function to filter users:
 function applyFilter(
     users,
-    { _idQuery, userNameQuery, emailQuery, phoneNumberQuery, roleQuery }
+    { page, _idQuery, userNameQuery, emailQuery, phoneNumberQuery, sortRole }
 ) {
     const filteredUsers = [];
-    console.log(_idQuery);
     for (const user of users) {
         if (_idQuery && !user._id.toString().includes(_idQuery)) {
             continue;
@@ -149,19 +146,40 @@ function applyFilter(
         if (emailQuery && !user.email.includes(emailQuery)) {
             continue;
         }
-        if (roleQuery && !Object.keys(user).includes(roleQuery.toLowerCase())) {
+        if (
+            sortRole &&
+            user.roleId.name.toLowerCase() !== sortRole.toLowerCase()
+        ) {
             continue;
         }
         filteredUsers.push(user);
     }
+    const curPage = Number(page);
+    const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredUsers.length;
 
-    return filteredUsers;
+    if (isLastPage) {
+        return {
+            users: filteredUsers.slice(
+                (curPage - 1) * 5,
+                (curPage - 1) * 5 + 5
+            ),
+            isLastPage: true,
+            totalUsers: filteredUsers.length,
+        };
+    }
+    return {
+        users: filteredUsers.slice((curPage - 1) * 5, (curPage - 1) * 5 + 5),
+        isLastPage: false,
+        totalUsers: filteredUsers.length,
+    };
 }
 
 // control to get users:
 exports.getUsers = async (req, res, next) => {
     try {
-        const allUsers = await User.find();
+        const allUsers = await User.find()
+            .populate("roleId")
+            .populate("checkout");
         const search = req.query;
         return res.status(200).json(applyFilter(allUsers, search));
     } catch (error) {
@@ -233,8 +251,8 @@ exports.addToCart = async (req, res, next) => {
 // UPDATE CART :
 exports.updateCart = async (req, res, next) => {
     try {
-        const newCart = req.body.cart;
-        const userId = req.body.userId;
+        const newCart = req.query.cart;
+        const userId = req.query.userId;
         const user = await User.findById(userId);
         if (!user) return res.sendStatus(403);
         user.cart = newCart;
@@ -248,8 +266,8 @@ exports.updateCart = async (req, res, next) => {
 // DELETE ITEM IN CART:
 exports.deleteCart = async (req, res, next) => {
     try {
-        const cartId = req.body.cartId;
-        const userId = req.body.userId;
+        const cartId = req.query.cartId;
+        const userId = req.query.userId;
         const user = await User.findById(userId);
         console.log(cartId);
         if (!user) return res.sendStatus(403);

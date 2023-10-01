@@ -11,6 +11,7 @@ const cookieParser = require("cookie-parser");
 
 const corsConfig = require("./configs/corsConfig");
 // import routers:
+const roleRouter = require("./routers/role-router");
 const adminRouter = require("./routers/admin-router");
 const userRouter = require("./routers/user-router");
 const productRouter = require("./routers/product-router");
@@ -41,6 +42,9 @@ app.use(
 );
 // refresh access token route:
 app.get("/refresh", refreshTokenController);
+
+// role router:
+app.use("/api/role", roleRouter);
 
 // admin router:
 app.use("/admin", adminRouter);
@@ -74,5 +78,5 @@ mongoose
         });
     })
     .catch((err) => {
-        res.status(500).json({ message: "Can not connect to database" });
+        console.log(err);
     });

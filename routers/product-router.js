@@ -13,7 +13,7 @@ const { verifyJWT } = require("../middlewares/verifyJWT");
 router.post(
     "/add-product",
     verifyJWT,
-    verifyRoles(ROLES_LIST.admin),
+    verifyRoles("admin"),
     productController.addNewProduct
 );
 
@@ -24,7 +24,7 @@ router.get("/get-products", productController.getProducts);
 router.delete(
     "/delete-product",
     verifyJWT,
-    verifyRoles(ROLES_LIST.admin),
+    verifyRoles("admin"),
     productController.deleteProduct
 );
 
@@ -32,7 +32,7 @@ router.delete(
 router.patch(
     "/edit-product",
     verifyJWT,
-    verifyRoles(ROLES_LIST.admin),
+    verifyRoles("admin"),
     productController.editProduct
 );
 
@@ -43,7 +43,7 @@ router.get("/related-products", productController.getRelatedProducts);
 router.post(
     "/add-review",
     verifyJWT,
-    verifyRoles(ROLES_LIST.user),
+    verifyRoles("user"),
     productController.addReview
 );
 

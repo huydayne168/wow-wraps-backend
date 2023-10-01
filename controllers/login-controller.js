@@ -22,7 +22,9 @@ exports.loginHandler = async (req, res, next) => {
             });
         }
 
-        const foundedUser = await User.findOne({ email: email });
+        const foundedUser = await User.findOne({ email: email }).populate(
+            "roleId"
+        );
         if (!foundedUser) {
             return res.status(401).json({ emailErr: "Incorrect email!" });
         }
@@ -36,12 +38,11 @@ exports.loginHandler = async (req, res, next) => {
             return res.status(401).json({ passwordErr: "Incorrect password!" });
         }
 
-        const userRoles = Object.values(foundedUser.roles);
         const accessToken = jwt.sign(
             {
                 UserInfo: {
                     email: foundedUser.email,
-                    roles: userRoles,
+                    roleId: foundedUser.roleId.name,
                 },
             },
             env.ACCESS_TOKEN,
@@ -54,7 +55,7 @@ exports.loginHandler = async (req, res, next) => {
             {
                 UserInfo: {
                     email: foundedUser.email,
-                    roles: userRoles,
+                    roleId: foundedUser.roleId.name,
                 },
             },
             env.REFRESH_TOKEN,
@@ -79,6 +80,6 @@ exports.loginHandler = async (req, res, next) => {
         res.json({ userInfo: foundedUser, accessToken });
     } catch (error) {
         console.log(error, "catch error in login controller");
-        res.sendStatus(401);
+        next(error);
     }
 };

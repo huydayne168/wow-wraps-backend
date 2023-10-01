@@ -13,7 +13,7 @@ const checkoutController = require("../controllers/checkout-controller");
 router.post(
     "/add-checkout",
     verifyJWT,
-    verifyRoles(ROLES_LIST.user),
+    verifyRoles("user"),
     checkoutController.addCheckout
 );
 
@@ -21,7 +21,7 @@ router.post(
 router.get(
     "/get-checkouts",
     verifyJWT,
-    verifyRoles(ROLES_LIST.admin),
+    verifyRoles("admin"),
     checkoutController.getCheckouts
 );
 
@@ -29,7 +29,7 @@ router.get(
 router.post(
     "/update-checkout",
     verifyJWT,
-    verifyRoles(ROLES_LIST.admin),
+    verifyRoles("admin"),
     checkoutController.updateCheckout
 );
 
@@ -37,7 +37,7 @@ router.post(
 router.delete(
     "/delete-checkout",
     verifyJWT,
-    verifyRoles(ROLES_LIST.admin),
+    verifyRoles("admin"),
     checkoutController.deleteCheckout
 );
 

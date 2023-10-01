@@ -1,5 +1,5 @@
 const User = require("../models/User");
-
+const Role = require("../models/Role");
 const bcryptjs = require("bcryptjs");
 
 require("dotenv").config();
@@ -31,12 +31,15 @@ exports.postSignup = async (req, res, next) => {
         const secretKey = req.body.secretKey;
         const verifyCode = req.body.verifyCode;
 
+        // check if user submit the verify key:
         if (verifyCode) {
             if (Number(verifyCode) === randomCode) {
                 // save admin here:
                 // hash password:
                 const hashedPassword = await bcryptjs.hash(password, 12);
-
+                const adminRole = await Role.find({ name: "admin" });
+                const adminRoleId = adminRole[0]._id;
+                console.log(adminRoleId);
                 const newAdmin = new User({
                     userName,
                     password: hashedPassword,
@@ -44,9 +47,7 @@ exports.postSignup = async (req, res, next) => {
                     phoneNumber,
                     cart: [],
                     checkout: [],
-                    roles: {
-                        admin: ROLES_LIST.admin,
-                    },
+                    roleId: adminRoleId,
                 });
 
                 await newAdmin.save();

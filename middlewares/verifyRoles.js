@@ -1,12 +1,13 @@
+const Role = require("../models/Role");
+
 const verifyRoles = (...allowedRoles) => {
     return (req, res, next) => {
-        if (!req?.roles) {
+        if (!req?.role) {
             return res.status(401);
         }
         const rolesArray = [...allowedRoles];
-        const result = req.roles
-            .map((role) => rolesArray.includes(Number(role)))
-            .find((value) => value === true);
+        const result = rolesArray.includes(req.role);
+        console.log(rolesArray, result);
         if (result) {
             next();
         } else {
