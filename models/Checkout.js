@@ -35,8 +35,8 @@ const checkoutSchema = new Schema(
         products: [
             {
                 product: {
-                    ref: "Product",
                     type: Schema.Types.ObjectId,
+                    ref: "Product",
                     required: true,
                 },
                 quantity: {

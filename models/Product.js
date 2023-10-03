@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Review = require("./Review");
 const Schema = mongoose.Schema;
 
 const productSchema = new Schema(
@@ -66,6 +65,20 @@ const productSchema = new Schema(
             type: String,
             required: true,
         },
+
+        flashSale: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "FlashSale",
+                required: true,
+            },
+        ],
+
+        salePrice: {
+            type: Number,
+            // required: true,
+        },
+
         isDeleted: {
             type: Boolean,
             required: true,

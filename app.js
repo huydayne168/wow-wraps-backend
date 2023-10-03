@@ -18,6 +18,8 @@ const productRouter = require("./routers/product-router");
 const tagRouter = require("./routers/tag-router");
 const categoryRouter = require("./routers/category-router");
 const checkoutRouter = require("./routers/checkout-router");
+const flashSaleRouter = require("./routers/flashSale-router");
+const voucherRouter = require("./routers/voucher-router");
 
 // import middlewares:
 const credentials = require("./middlewares/credential");
@@ -54,6 +56,7 @@ app.use("/user", userRouter);
 
 // product router:
 app.use("/api/product", productRouter);
+
 // tag router:
 app.use("/api/tag", tagRouter);
 
@@ -62,6 +65,12 @@ app.use("/api/category", categoryRouter);
 
 // category router:
 app.use("/api/checkout", checkoutRouter);
+
+// flash sale router:
+app.use("/api/fs", flashSaleRouter);
+
+// flash sale router:
+app.use("/api/voucher", voucherRouter);
 
 // error handling:
 app.use((error, req, res, next) => {

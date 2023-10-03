@@ -10,6 +10,7 @@ const { env } = require("process");
 const { validationResult } = require("express-validator");
 
 const ROLES_LIST = require("../configs/roles-list");
+const Checkout = require("../models/Checkout");
 
 // random a code to verify admin
 const getCode = function () {
@@ -36,7 +37,9 @@ exports.postSignup = async (req, res, next) => {
                 // save user here:
                 // hash password:
                 const hashedPassword = await bcryptjs.hash(password, 12);
-                const userRoleId = await Role.find({ name: "user" });
+                const userRole = await Role.find({ name: "user" });
+                const userRoleId = userRole[0]._id;
+                console.log(userRoleId);
                 const newUser = new User({
                     userName,
                     password: hashedPassword,
@@ -44,7 +47,7 @@ exports.postSignup = async (req, res, next) => {
                     phoneNumber,
                     cart: [],
                     checkout: [],
-                    roleId: userRoleId,
+                    roleId: userRoleId._id,
                 });
 
                 await newUser.save();
@@ -154,6 +157,12 @@ function applyFilter(
         }
         filteredUsers.push(user);
     }
+    if (!page) {
+        return {
+            users: filteredUsers,
+            totalUsers: filteredUsers.length,
+        };
+    }
     const curPage = Number(page);
     const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredUsers.length;
 
@@ -180,6 +189,9 @@ exports.getUsers = async (req, res, next) => {
         const allUsers = await User.find()
             .populate("roleId")
             .populate("checkout");
+        // .populate("product");
+        // .populate("checkout.products.product");
+        console.log("res", allUsers[1].checkout[0]);
         const search = req.query;
         return res.status(200).json(applyFilter(allUsers, search));
     } catch (error) {
@@ -194,9 +206,13 @@ exports.getAnUser = async (req, res, next) => {
         const userId = req.query._id;
         const foundUser = await User.findOne({
             _id: userId,
-        });
+        }).populate("roleId");
+        const checkouts = await Checkout.find().populate("products.product");
+        const userCheckouts = checkouts.filter(
+            (checkout) => checkout.user.toString() === userId
+        );
         if (!foundUser) return res.sendStatus(401);
-        return res.status(200).json(foundUser);
+        return res.status(200).json({ foundUser, userCheckouts });
     } catch (error) {
         console.log(error);
         next(error);
@@ -222,14 +238,14 @@ exports.addToCart = async (req, res, next) => {
         const { userId, product: productId, quantity } = req.body;
         const user = await User.findById(userId);
         if (!user) return res.sendStatus(403);
-
+        console.log(productId);
         // Is this product already exist in cart?
         const isExist = user.cart.some(
-            (cartItem) => cartItem.product === productId
+            (cartItem) => cartItem.product.toString() === productId
         );
         if (isExist) {
             user.cart.map((cartItem) => {
-                if (cartItem.product === productId) {
+                if (cartItem.product.toString() === productId) {
                     cartItem.quantity += quantity;
                 }
                 return cartItem;
@@ -251,14 +267,16 @@ exports.addToCart = async (req, res, next) => {
 // UPDATE CART :
 exports.updateCart = async (req, res, next) => {
     try {
-        const newCart = req.query.cart;
-        const userId = req.query.userId;
+        const newCart = req.body.cart;
+        const userId = req.body.userId;
+        console.log(userId);
         const user = await User.findById(userId);
         if (!user) return res.sendStatus(403);
         user.cart = newCart;
         await user.save();
         return res.sendStatus(204);
     } catch (error) {
+        console.log(error);
         next(error);
     }
 };

@@ -1,5 +1,9 @@
 const Checkout = require("../models/Checkout");
 const User = require("../models/User");
+const sgMail = require("@sendgrid/mail");
+require("dotenv").config();
+const { env } = require("process");
+const Voucher = require("../models/Voucher");
 // add checkout:
 exports.addCheckout = async (req, res, next) => {
     try {
@@ -13,7 +17,28 @@ exports.addCheckout = async (req, res, next) => {
             total,
             paymentMethod,
             status,
+            voucher,
         } = req.body;
+
+        let finalTotal = total;
+
+        if (voucher) {
+            console.log(voucher);
+            const foundVoucher = await Voucher.find({ code: voucher.code });
+            console.log(foundVoucher);
+            if (foundVoucher) {
+                finalTotal = (
+                    (Number(total) * Number(foundVoucher[0].discountPercent)) /
+                    100
+                ).toFixed(2);
+            }
+            foundVoucher[0].quantity = foundVoucher[0].quantity - 1;
+            console.log(foundVoucher[0].quantity);
+            if (foundVoucher[0].quantity === 0) {
+                foundVoucher[0].isDeleted = true;
+            }
+            await foundVoucher[0].save();
+        }
 
         const newCheckout = new Checkout({
             date,
@@ -22,7 +47,7 @@ exports.addCheckout = async (req, res, next) => {
             phoneNumber,
             address,
             products,
-            total,
+            total: finalTotal,
             paymentMethod,
             status: status.toUpperCase(),
             isDeleted: false,
@@ -34,7 +59,37 @@ exports.addCheckout = async (req, res, next) => {
         curUser.checkout.push(newCheckout._id);
         curUser.cart = [];
         await curUser.save();
-        res.sendStatus(204);
+
+        // Send email:
+        sgMail.setApiKey(env.SENDGRID_KEY);
+        const msg = {
+            to: curUser.email,
+            from: env.EMAIL, // Use the email address or domain you verified above
+            subject: "from WOW WRAPS",
+            text: `
+                Thanks for your order!
+                
+            `,
+            html: `
+                <h1>Thanks for your order!</h1>
+            `,
+        };
+
+        sgMail.send(msg).then(
+            () => {
+                console.log("sent!");
+            },
+            (error) => {
+                console.error(error);
+                if (error.response) {
+                    console.error(error.response.body);
+                    return res
+                        .status(500)
+                        .json({ message: "Can not send email!" });
+                }
+            }
+        );
+        return res.sendStatus(204);
     } catch (error) {
         console.log(error);
         next(error);
@@ -131,6 +186,12 @@ function applyFilters(
                 return checkoutA.total - checkoutB.total;
             }
         });
+    }
+    if (!page) {
+        return {
+            checkouts: filteredCheckouts,
+            totalCheckouts: filteredCheckouts.length,
+        };
     }
     // is the last page:
     const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredCheckouts.length;

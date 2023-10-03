@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const User = require("../models/User");
 const cloudinary = require("../utils/cloudinary");
+const { validationResult } = require("express-validator");
 // create new product here:
 exports.addNewProduct = async (req, res, next) => {
     const {
@@ -15,6 +16,13 @@ exports.addNewProduct = async (req, res, next) => {
     } = req.body;
 
     try {
+        const inputError = validationResult(req);
+        if (!inputError.isEmpty()) {
+            return res.status(422).json({
+                validationErrors: inputError.array(),
+            });
+        }
+
         if (image) {
             const uploadRes = await cloudinary.uploader.upload(image, {
                 folder: "wow-wraps-product-images",
@@ -32,10 +40,14 @@ exports.addNewProduct = async (req, res, next) => {
                     longDescription,
                     tags: tags,
                     image: uploadRes.url,
+                    flashSale: [],
+                    salePrice: null,
                     isDeleted: false,
                 });
                 await newProduct.save();
                 res.sendStatus(200);
+            } else {
+                return res.sendStatus(409);
             }
         }
     } catch (error) {
@@ -74,7 +86,7 @@ function applyFilters(
         if (
             category !== "All" &&
             category &&
-            product.category._id.toLowerCase() !== category.toLowerCase()
+            product.category._id.toString() !== category
         ) {
             continue;
         }
@@ -101,6 +113,12 @@ function applyFilters(
             (productA, productB) =>
                 Number(productB.price) - Number(productA.price)
         );
+    }
+
+    if (!page) {
+        return {
+            products: filteredProducts,
+        };
     }
     const isLastPage = (Number(page) - 1) * 5 + 5 >= filteredProducts.length;
 
@@ -143,10 +161,10 @@ exports.getRelatedProducts = async (req, res, next) => {
     try {
         const productId = req.query.productId;
         const category = req.query.category;
-        const products = await Product.find();
+        const products = await Product.find({ isDeleted: false });
         const relatedProducts = products.filter((product) => {
             return (
-                product.category === category &&
+                product.category.toString() === category &&
                 product._id.toString() !== productId
             );
         });
@@ -161,7 +179,6 @@ exports.deleteProduct = async (req, res, next) => {
     try {
         const productId = req.query._id;
         const deletedProduct = await Product.findById(productId);
-        console.log(deletedProduct);
         const carts = await User.find()
             .populate({
                 path: "cart.product",
@@ -175,7 +192,6 @@ exports.deleteProduct = async (req, res, next) => {
                 .map((cart) => cart.cart)
                 .flat(),
         ];
-        console.log(productsInCart);
         // check if the product that we want to delete exist in any cart?
         if (productsInCart) {
             const isFailedToDelete = productsInCart.some(
@@ -197,6 +213,12 @@ exports.deleteProduct = async (req, res, next) => {
 
 exports.editProduct = async (req, res, next) => {
     try {
+        const inputError = validationResult(req);
+        if (!inputError.isEmpty()) {
+            return res.status(422).json({
+                validationErrors: inputError.array(),
+            });
+        }
         const {
             _id,
             name,
@@ -208,7 +230,9 @@ exports.editProduct = async (req, res, next) => {
             tags,
             image,
         } = req.body;
-        const foundedProduct = await Product.findOne({ _id: _id });
+        const foundedProduct = await Product.findOne({ _id: _id }).populate(
+            "tags"
+        );
 
         // update data:
         foundedProduct.name = name;
@@ -232,7 +256,6 @@ exports.editProduct = async (req, res, next) => {
 exports.addReview = async (req, res, next) => {
     try {
         const { productId, comment, date, ratePoint, user: userId } = req.body;
-        console.log(ratePoint);
         const product = await Product.findById(productId);
         const user = await User.findById(userId);
         if (!product) return res.sendStatus(404);

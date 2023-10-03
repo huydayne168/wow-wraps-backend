@@ -3,7 +3,6 @@ const express = require("express");
 const router = express.Router();
 const { verifyJWT } = require("../middlewares/verifyJWT");
 const verifyRoles = require("../middlewares/verifyRoles");
-const ROLES_LIST = require("../configs/roles-list");
 const userController = require("../controllers/user-controller");
 const { body } = require("express-validator");
 const { loginHandler } = require("../controllers/login-controller");
@@ -31,7 +30,7 @@ router.post(
 );
 
 // route for user to log in:
-router.post("/login", loginHandler);
+router.post("/login", loginHandler("user"));
 
 // route ti log out:
 router.post("/logout", logoutController);

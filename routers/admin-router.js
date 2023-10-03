@@ -35,7 +35,7 @@ router.post(
         body("email", "Please enter your email!").notEmpty(), // check if email is not empty and it is a valid email
         body("password", "Please enter your password!").notEmpty(),
     ],
-    loginHandler
+    loginHandler("admin")
 );
 
 router.get("/get-user", getAnUser);
