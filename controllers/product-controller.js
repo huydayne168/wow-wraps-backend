@@ -278,12 +278,16 @@ exports.addReview = async (req, res, next) => {
         const product = await Product.findById(productId);
         const user = await User.findById(userId);
         if (!product) return res.sendStatus(404);
-        product.reviews.push({
-            date,
-            comment,
-            ratePoint,
-            user,
-        });
+
+        product.reviews = [
+            {
+                date,
+                comment,
+                ratePoint,
+                user,
+            },
+            ...product.reviews,
+        ];
         console.log(user);
         product.rate = Math.round(
             product.reviews.reduce((init, next) => init + next.ratePoint, 0) /

@@ -116,6 +116,20 @@ exports.getVoucher = async (req, res, next) => {
     }
 };
 
+exports.applyVoucher = async (req, res, next) => {
+    try {
+        const code = req.query.code;
+        const vouchers = await Voucher.find({ code: code, isDeleted: false });
+        console.log(vouchers);
+        if (!vouchers[0]) {
+            return res.sendStatus(409);
+        }
+        return res.status(200).json(vouchers);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // delete voucher:
 exports.deleteVoucher = async (req, res, next) => {
     try {

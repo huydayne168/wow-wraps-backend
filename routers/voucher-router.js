@@ -24,7 +24,20 @@ router.post(
 );
 
 // route to get vouchers:
-router.get("/get-vouchers", voucherController.getVoucher);
+router.get(
+    "/get-vouchers",
+    verifyJWT,
+    verifyRoles("admin"),
+    voucherController.getVoucher
+);
+
+// route to get vouchers:
+router.get(
+    "/apply-voucher",
+    verifyJWT,
+    verifyRoles("user"),
+    voucherController.applyVoucher
+);
 
 // route to delete vouchers:
 router.delete(
