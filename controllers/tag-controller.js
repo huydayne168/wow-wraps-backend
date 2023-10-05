@@ -1,3 +1,4 @@
+const Product = require("../models/Product");
 const Tag = require("../models/Tag");
 
 function applyFilter(categories, tagQuery) {
@@ -18,7 +19,7 @@ function applyFilter(categories, tagQuery) {
 
 exports.getTags = async (req, res, next) => {
     try {
-        const tagsList = await Tag.find();
+        const tagsList = await Tag.find().sort({ createdAt: -1 });
         const tagQuery = req.query.tagQuery;
         res.status(200).json(applyFilter(tagsList, tagQuery));
     } catch (error) {
@@ -43,8 +44,16 @@ exports.deleteTag = async (req, res, next) => {
     try {
         const tag = req.query.tag;
 
-        await Tag.deleteOne({ name: tag });
-        res.sendStatus(204);
+        const allProducts = await Product.find().populate("tags");
+        const products = allProducts.filter((p) => {
+            return p.tags.some((_tag) => _tag._id === tag._id);
+        });
+        products.map(async (p) => {
+            p.tags = p.tags.filter((_tag) => _tag._id !== tag._id);
+            await p.save();
+        });
+        await Tag.deleteOne({ _id: tag._id });
+        return res.sendStatus(204);
     } catch (error) {
         next(error);
     }

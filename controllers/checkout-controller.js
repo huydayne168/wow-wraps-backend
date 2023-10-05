@@ -24,18 +24,24 @@ exports.addCheckout = async (req, res, next) => {
 
         if (voucher) {
             console.log(voucher);
-            const foundVoucher = await Voucher.find({ code: voucher.code });
+            const foundVoucher = await Voucher.find({
+                code: voucher.code,
+                isDeleted: false,
+            });
             console.log(foundVoucher);
             if (foundVoucher) {
                 finalTotal = (
-                    (Number(total) * Number(foundVoucher[0].discountPercent)) /
+                    (Number(total) *
+                        (100 - Number(foundVoucher[0].discountPercent))) /
                     100
                 ).toFixed(2);
+            } else {
+                res.sendStatus(409);
             }
             foundVoucher[0].quantity = foundVoucher[0].quantity - 1;
             console.log(foundVoucher[0].quantity);
             if (foundVoucher[0].quantity === 0) {
-                foundVoucher[0].isDeleted = true;
+                foundVoucher[0].isActive = false;
             }
             await foundVoucher[0].save();
         }
@@ -111,6 +117,7 @@ function applyFilters(
         sortTotal,
     }
 ) {
+    console.log(sortStatus);
     const filteredCheckouts = [];
     for (const checkout of checkouts) {
         if (_idQuery && !checkout._id.toString().includes(_idQuery)) {
@@ -151,7 +158,7 @@ function applyFilters(
 
         if (
             sortStatus &&
-            !checkout.status.toUpperCase() === sortStatus.toUpperCase()
+            checkout.status.toUpperCase() !== sortStatus.toUpperCase()
         ) {
             continue;
         }
@@ -219,7 +226,8 @@ function applyFilters(
 
 exports.getCheckouts = async (req, res, next) => {
     try {
-        const allCheckouts = await Checkout.find()
+        const allCheckouts = await Checkout.find({ isDeleted: false })
+            .sort({ createdAt: -1 })
             .populate("user")
             .populate("products.product");
         if (allCheckouts) {
@@ -247,7 +255,8 @@ exports.updateCheckout = async (req, res, next) => {
 
 exports.deleteCheckout = async (req, res, next) => {
     try {
-        const checkoutId = req.body.checkoutId;
+        const checkoutId = req.query.checkoutId;
+        console.log(checkoutId);
         const checkout = await Checkout.findById(checkoutId);
         checkout.isDeleted = true;
         await checkout.save();

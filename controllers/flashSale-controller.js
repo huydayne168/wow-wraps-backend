@@ -72,7 +72,6 @@ exports.addFlashSale = async (req, res, next) => {
             end,
             products,
             isActive: false,
-            isOver: false,
             isDelete: false,
         });
         if (products.length === 0) {
@@ -109,7 +108,7 @@ exports.addFlashSale = async (req, res, next) => {
                     ? startTime.getMonth() + 1
                     : "*"
             } *`;
-            // if not wait when the time hit
+            // if not wait when the start time hit
             console.log(stringTime);
             const activeFs = cron.schedule(stringTime, async () => {
                 console.log(newFS, "time up!");
@@ -162,13 +161,10 @@ exports.addFlashSale = async (req, res, next) => {
             endTime.getMonth() > now.getMonth() ? start.getMonth() + 1 : "*"
         } *`;
         const InActiveFs = cron.schedule(stringEndTime, async () => {
-            console.log(newFS, "time up!");
             newFS.isActive = false;
             await newFS.save();
             saleProducts.forEach(async (product) => {
-                product.flashSale = product.flashSale.filter(
-                    (fs) => fs !== newFS._id
-                );
+                product.flashSale = [];
                 product.salePrice = null;
                 await product.save();
             });
@@ -198,7 +194,7 @@ exports.addFlashSale = async (req, res, next) => {
                 }
             }
         );
-
+        await newFS.save();
         return res.sendStatus(204);
     } catch (error) {
         console.log(error);
@@ -249,9 +245,9 @@ const applyFilters = (
 // get flash sales:
 exports.getFlashSales = async (req, res, next) => {
     try {
-        const flashSales = await FlashSale.find({ isDelete: false }).populate(
-            "products"
-        );
+        const flashSales = await FlashSale.find({ isDelete: false })
+            .populate("products")
+            .sort({ createdAt: -1 });
 
         return res.status(200).json(applyFilters(flashSales, req.query));
     } catch (error) {
@@ -265,6 +261,7 @@ exports.deleteFlashSale = async (req, res, next) => {
         const flashSaleId = req.query.flashSaleId;
         const flashSale = await FlashSale.findById(flashSaleId);
         if (!flashSale) return res.sendStatus(409);
+        flashSale.isActive = false;
         flashSale.isDelete = true;
         await flashSale.save();
         const allProducts = await Product.find({ isDeleted: false });
@@ -272,9 +269,7 @@ exports.deleteFlashSale = async (req, res, next) => {
             flashSale.products.includes(product._id)
         );
         saleProducts.forEach(async (product) => {
-            product.flashSale = product.flashSale.filter(
-                (fs) => fs !== flashSale._id
-            );
+            product.flashSale = [];
             product.salePrice = null;
             await product.save();
         });

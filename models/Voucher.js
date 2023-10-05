@@ -24,6 +24,11 @@ const voucherSchema = new Schema(
             required: true,
         },
 
+        isActive: {
+            type: Boolean,
+            required: false,
+        },
+
         isDeleted: {
             type: Boolean,
             required: false,

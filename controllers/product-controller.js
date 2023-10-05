@@ -66,9 +66,11 @@ function applyFilters(
         sortRate,
         sortLowPrice,
         sortHighPrice,
+        sortFlashSale,
         page,
     }
 ) {
+    console.log(category);
     const filteredProducts = [];
     const curPage = Number(page);
     for (const product of products) {
@@ -89,6 +91,18 @@ function applyFilters(
             product.category._id.toString() !== category
         ) {
             continue;
+        }
+
+        if (sortFlashSale) {
+            if (JSON.parse(sortFlashSale)) {
+                if (product.flashSale.length === 0) {
+                    continue;
+                }
+            } else if (!JSON.parse(sortFlashSale)) {
+                if (product.flashSale.length > 0) {
+                    continue;
+                }
+            }
         }
 
         filteredProducts.push(product);
@@ -146,7 +160,9 @@ exports.getProducts = async (req, res, next) => {
     try {
         const allProducts = await Product.find({ isDeleted: false })
             .populate("category")
-            .populate("tags");
+            .populate("tags")
+            .populate("flashSale")
+            .sort({ createdAt: -1 });
         console.log(allProducts);
         if (allProducts) {
             return res.status(200).json(applyFilters(allProducts, req.query));
@@ -161,10 +177,13 @@ exports.getRelatedProducts = async (req, res, next) => {
     try {
         const productId = req.query.productId;
         const category = req.query.category;
-        const products = await Product.find({ isDeleted: false });
+        console.log(category);
+        const products = await Product.find({ isDeleted: false }).populate(
+            "category tags flashSale"
+        );
         const relatedProducts = products.filter((product) => {
             return (
-                product.category.toString() === category &&
+                product.category._id.toString() === category &&
                 product._id.toString() !== productId
             );
         });
@@ -284,6 +303,7 @@ exports.getReviews = async (req, res, next) => {
         const product = await Product.findById(productId).populate(
             "reviews.user"
         );
+
         // const reviews = await product.reviews.populate("reviews");
         if (!product) return res.sendStatus(404);
         return res.status(200).json(product.reviews);

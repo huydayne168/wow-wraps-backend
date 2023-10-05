@@ -1,5 +1,5 @@
 const Category = require("../models/Category");
-
+const Product = require("../models/Product");
 function applyFilter(categories, categoryQuery) {
     const filteredCategories = [];
 
@@ -18,7 +18,7 @@ function applyFilter(categories, categoryQuery) {
 
 exports.getCategories = async (req, res, next) => {
     try {
-        const categoriesList = await Category.find();
+        const categoriesList = await Category.find().sort({ createdAt: -1 });
         const categoryQuery = req.query.categoryQuery;
         res.status(200).json(applyFilter(categoriesList, categoryQuery));
     } catch (error) {
@@ -29,6 +29,10 @@ exports.getCategories = async (req, res, next) => {
 exports.addCategory = async (req, res, next) => {
     try {
         const data = req.body.newCategory;
+        const duplicateCate = await Category.find({ name: data });
+        if (duplicateCate[0]) {
+            return re.sendStatus(409);
+        }
         const newCategory = new Category({
             name: data,
         });
@@ -41,8 +45,13 @@ exports.addCategory = async (req, res, next) => {
 
 exports.deleteCategory = async (req, res, next) => {
     try {
-        const category = req.query.category;
-        await Category.deleteOne({ name: category });
+        const categoryId = req.query.categoryId;
+        console.log(categoryId);
+        const products = await Product.find({ category: categoryId });
+        if (products[0]) {
+            return res.sendStatus(409);
+        }
+        await Category.deleteOne({ _id: categoryId });
         res.sendStatus(204);
     } catch (error) {
         next(error);

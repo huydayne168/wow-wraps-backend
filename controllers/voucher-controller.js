@@ -18,7 +18,7 @@ exports.addVoucher = async (req, res, next) => {
             code: code,
             isDeleted: false,
         });
-        console.log(existedVoucherCode);
+        console.log(existedVoucherCode, "here");
         if (existedVoucherCode[0]) {
             return res.sendStatus(409);
         }
@@ -28,6 +28,7 @@ exports.addVoucher = async (req, res, next) => {
             discountPercent,
             quantity,
             end,
+            isActive: true,
             isDeleted: false,
         });
         await newVoucher.save();
@@ -38,8 +39,9 @@ exports.addVoucher = async (req, res, next) => {
         } ${endTime.getDate() > now.getDate() ? endTime.getDate() : "*"} ${
             endTime.getMonth() > now.getMonth() ? start.getMonth() + 1 : "*"
         } *`;
+        console.log(stringEndTime, ">>>>here");
         const voucherTimeUp = cron.schedule(stringEndTime, async () => {
-            newVoucher.isDeleted = true;
+            newVoucher.isActive = false;
             await newVoucher.save();
             voucherTimeUp.stop();
         });
@@ -50,8 +52,11 @@ exports.addVoucher = async (req, res, next) => {
     }
 };
 
-const applyFilters = (vouchers, { page, sortQuantity, codeQuery }) => {
-    console.log(codeQuery);
+const applyFilters = (
+    vouchers,
+    { page, sortQuantity, codeQuery, sortActive }
+) => {
+    console.log(codeQuery, ">>>>>> here");
     const filteredVouchers = [];
     for (const voucher of vouchers) {
         if (
@@ -59,6 +64,18 @@ const applyFilters = (vouchers, { page, sortQuantity, codeQuery }) => {
             !voucher.code.toLowerCase().includes(codeQuery.toLowerCase())
         ) {
             continue;
+        }
+
+        if (sortActive) {
+            if (JSON.parse(sortActive)) {
+                if (!voucher.isActive) {
+                    continue;
+                }
+            } else if (!JSON.parse(sortActive)) {
+                if (voucher.isActive) {
+                    continue;
+                }
+            }
         }
 
         filteredVouchers.push(voucher);
@@ -86,10 +103,12 @@ const applyFilters = (vouchers, { page, sortQuantity, codeQuery }) => {
     };
 };
 
-// get flash sales:
+// get vouchers:
 exports.getVoucher = async (req, res, next) => {
     try {
-        const vouchers = await Voucher.find({ isDeleted: false });
+        const vouchers = await Voucher.find({ isDeleted: false }).sort({
+            createdAt: -1,
+        });
         console.log(vouchers);
         return res.status(200).json(applyFilters(vouchers, req.query));
     } catch (error) {
@@ -104,6 +123,7 @@ exports.deleteVoucher = async (req, res, next) => {
         const voucher = await Voucher.findById(voucherId);
         if (!voucher) return res.sendStatus(409);
         voucher.isDeleted = true;
+        voucher.isActive = false;
         await voucher.save();
         return res.sendStatus(204);
     } catch (error) {

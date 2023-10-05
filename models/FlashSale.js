@@ -36,11 +36,6 @@ const FlashSaleSchema = new Schema(
             required: true,
         },
 
-        isOver: {
-            type: Boolean,
-            required: true,
-        },
-
         isDelete: {
             type: Boolean,
             required: true,

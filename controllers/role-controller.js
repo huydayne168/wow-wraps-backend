@@ -3,7 +3,9 @@ const Role = require("../models/Role");
 // get roles:
 exports.getRoles = async (req, res, next) => {
     try {
-        const roles = await Role.find({ isActive: true }); // just get role that is still active
+        const roles = await Role.find({ isActive: true }).sort({
+            createdAt: -1,
+        }); // just get role that is still active
         return res.status(200).json(roles);
     } catch (error) {
         console.log(error);

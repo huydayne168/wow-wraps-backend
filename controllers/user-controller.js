@@ -188,9 +188,8 @@ exports.getUsers = async (req, res, next) => {
     try {
         const allUsers = await User.find()
             .populate("roleId")
-            .populate("checkout");
-        // .populate("product");
-        // .populate("checkout.products.product");
+            .populate("checkout")
+            .sort({ createdAt: -1 });
         console.log("res", allUsers[1].checkout[0]);
         const search = req.query;
         return res.status(200).json(applyFilter(allUsers, search));
