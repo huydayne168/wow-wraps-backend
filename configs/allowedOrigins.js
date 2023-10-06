@@ -1,5 +1,6 @@
 const allowedOrigins = [
-    "https://www.yoursite.com",
+    "https://admin-wow-wraps-tsx.vercel.app/",
+    "https://client-wow-wraps-tsx.vercel.app/",
     "http://localhost:3000",
     "http://localhost:3001",
 ];
