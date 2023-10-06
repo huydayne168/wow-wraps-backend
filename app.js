@@ -32,7 +32,7 @@ const {
 
 /////// Middlewares:
 app.use(credentials);
-app.use(cors());
+app.use(cors(corsConfig));
 app.use(cookieParser());
 app.use(bodyParser.json({ limit: "35mb" }));
 app.use(
