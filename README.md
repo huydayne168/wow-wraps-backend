@@ -1,10 +1,13 @@
 # wow-wraps-backend
 # This is the backend of WOW WRAPS project.
 ## About WOW WRAPS:
-WOW WRAPS is a food odering website:\
-It has client and admin website\
-Allow customer to order food, reserve a table, read blogs,...\
-Allow admin to manage users, foods, flashsales, vouchers,...\
+WOW WRAPS is a food odering website:
+
+It has client and admin website
+
+Allow customer to order food, reserve a table, read blogs,...
+
+Allow admin to manage users, foods, flashsales, vouchers,...
 ## Back end:
 This backend's techstacks:
 NodeJs, ExpressJs, MongoDb, mongoose, cloundinary, sendgrid, node-cron, ...
