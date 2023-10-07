@@ -32,6 +32,7 @@ exports.addVoucher = async (req, res, next) => {
             isDeleted: false,
         });
         await newVoucher.save();
+        console.log(end);
         const endTime = new Date(end);
         const now = new Date();
         const stringEndTime = `${endTime.getMinutes()} ${
@@ -56,7 +57,6 @@ const applyFilters = (
     vouchers,
     { page, sortQuantity, codeQuery, sortActive }
 ) => {
-    console.log(codeQuery, ">>>>>> here");
     const filteredVouchers = [];
     for (const voucher of vouchers) {
         if (
@@ -109,7 +109,21 @@ exports.getVoucher = async (req, res, next) => {
         const vouchers = await Voucher.find({ isDeleted: false }).sort({
             createdAt: -1,
         });
-        console.log(vouchers);
+        const now = new Date();
+        const outDateVouchers = await Voucher.find({
+            isDeleted: false,
+            isActive: true,
+        }).sort({
+            createdAt: -1,
+        });
+        if (outDateVouchers[0]) {
+            outDateVouchers.forEach(async (v) => {
+                if (new Date(v.end) < now) {
+                    v.isActive = false;
+                    await v.save();
+                }
+            });
+        }
         return res.status(200).json(applyFilters(vouchers, req.query));
     } catch (error) {
         next(error);
