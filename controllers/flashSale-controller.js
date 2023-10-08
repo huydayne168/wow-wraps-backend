@@ -110,29 +110,37 @@ exports.addFlashSale = async (req, res, next) => {
             } *`;
             // if not wait when the start time hit
             console.log(stringTime);
-            const activeFs = cron.schedule(stringTime, async () => {
-                console.log(newFS, "time up!");
-                newFS.isActive = true;
-                await newFS.save();
-                saleProducts.forEach(async (product) => {
-                    product.flashSale = [...product.flashSale, newFS._id];
-                    // check if there is an flashSale exist in that item:
-                    if (product.salePrice > 0) {
-                        product.salePrice = (
-                            (product.salePrice *
-                                (100 - newFS.discountPercent)) /
-                            100
-                        ).toFixed(2);
-                    } else {
-                        product.salePrice = (
-                            (product.price * (100 - newFS.discountPercent)) /
-                            100
-                        ).toFixed(2);
-                    }
-                    await product.save();
-                });
-                activeFs.stop();
-            });
+            const activeFs = cron.schedule(
+                stringTime,
+                async () => {
+                    console.log(newFS, "time up!");
+                    newFS.isActive = true;
+                    await newFS.save();
+                    saleProducts.forEach(async (product) => {
+                        product.flashSale = [...product.flashSale, newFS._id];
+                        // check if there is an flashSale exist in that item:
+                        if (product.salePrice > 0) {
+                            product.salePrice = (
+                                (product.salePrice *
+                                    (100 - newFS.discountPercent)) /
+                                100
+                            ).toFixed(2);
+                        } else {
+                            product.salePrice = (
+                                (product.price *
+                                    (100 - newFS.discountPercent)) /
+                                100
+                            ).toFixed(2);
+                        }
+                        await product.save();
+                    });
+                    activeFs.stop();
+                },
+                {
+                    scheduled: false,
+                }
+            );
+            activeFs.start();
         } else {
             newFS.isActive = true;
             await newFS.save();
@@ -160,16 +168,24 @@ exports.addFlashSale = async (req, res, next) => {
         } ${endTime.getDate() > now.getDate() ? endTime.getDate() : "*"} ${
             endTime.getMonth() > now.getMonth() ? start.getMonth() + 1 : "*"
         } *`;
-        const InActiveFs = cron.schedule(stringEndTime, async () => {
-            newFS.isActive = false;
-            await newFS.save();
-            saleProducts.forEach(async (product) => {
-                product.flashSale = [];
-                product.salePrice = null;
-                await product.save();
-            });
-            InActiveFs.stop();
-        });
+        const InActiveFs = cron.schedule(
+            stringEndTime,
+            async () => {
+                newFS.isActive = false;
+                await newFS.save();
+                saleProducts.forEach(async (product) => {
+                    product.flashSale = [];
+                    product.salePrice = null;
+                    await product.save();
+                });
+                InActiveFs.stop();
+            },
+            {
+                scheduled: false,
+            }
+        );
+
+        InActiveFs.start();
 
         sgMail.setApiKey(env.SENDGRID_KEY);
         const msg = {
