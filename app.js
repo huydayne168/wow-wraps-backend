@@ -20,6 +20,7 @@ const categoryRouter = require("./routers/category-router");
 const checkoutRouter = require("./routers/checkout-router");
 const flashSaleRouter = require("./routers/flashSale-router");
 const voucherRouter = require("./routers/voucher-router");
+const chatRouter = require("./routers/chat");
 
 // import middlewares:
 const credentials = require("./middlewares/credential");
@@ -72,6 +73,9 @@ app.use("/api/fs", flashSaleRouter);
 // flash sale router:
 app.use("/api/voucher", voucherRouter);
 
+// chat router:
+app.use("/api/chat", chatRouter);
+
 // error handling:
 app.use((error, req, res, next) => {
     const errStatus = error.status || 500;
@@ -82,8 +86,15 @@ app.use((error, req, res, next) => {
 mongoose
     .connect(env.MONGODB_URI)
     .then((res) => {
-        app.listen(PORT, () => {
+        const server = app.listen(PORT, () => {
             console.log(">>>>>>>>>I AM RUNNING IN PORT:" + PORT + "<<<<<<<<<");
+        });
+        const io = require("./socketio").init(server);
+        io.on("connection", (socket) => {
+            console.log("Client connected!");
+            socket.on("sendMess", (data) => {
+                socket.broadcast.emit("receiveMess", data);
+            });
         });
     })
     .catch((err) => {

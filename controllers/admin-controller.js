@@ -39,7 +39,6 @@ exports.postSignup = async (req, res, next) => {
                 const hashedPassword = await bcryptjs.hash(password, 12);
                 const adminRole = await Role.find({ name: "admin" });
                 const adminRoleId = adminRole[0]._id;
-                console.log(adminRoleId);
                 const newAdmin = new User({
                     userName,
                     password: hashedPassword,

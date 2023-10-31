@@ -70,7 +70,6 @@ function applyFilters(
         page,
     }
 ) {
-    console.log(category);
     const filteredProducts = [];
     const curPage = Number(page);
     for (const product of products) {
@@ -107,6 +106,7 @@ function applyFilters(
 
         filteredProducts.push(product);
     }
+
     if (sortRate && JSON.parse(sortRate)) {
         filteredProducts.sort(
             (productA, productB) =>
@@ -162,8 +162,8 @@ exports.getProducts = async (req, res, next) => {
             .populate("category")
             .populate("tags")
             .populate("flashSale")
+            .populate("reviews.user")
             .sort({ createdAt: -1 });
-        console.log(allProducts);
         if (allProducts) {
             return res.status(200).json(applyFilters(allProducts, req.query));
         }
@@ -177,7 +177,6 @@ exports.getRelatedProducts = async (req, res, next) => {
     try {
         const productId = req.query.productId;
         const category = req.query.category;
-        console.log(category);
         const products = await Product.find({ isDeleted: false }).populate(
             "category tags flashSale"
         );
@@ -268,6 +267,7 @@ exports.editProduct = async (req, res, next) => {
         return res.sendStatus(204);
     } catch (error) {
         next(error);
+        console.log(error);
     }
 };
 
@@ -288,7 +288,6 @@ exports.addReview = async (req, res, next) => {
             },
             ...product.reviews,
         ];
-        console.log(user);
         product.rate = Math.round(
             product.reviews.reduce((init, next) => init + next.ratePoint, 0) /
                 product.reviews.length

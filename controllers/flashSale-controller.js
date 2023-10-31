@@ -87,7 +87,6 @@ exports.addFlashSale = async (req, res, next) => {
         }
         const allProducts = await Product.find({ isDeleted: false });
         const users = await User.find().select("email -_id");
-        console.log(users);
         const emails = users.map((user) => user.email);
         const saleProducts = allProducts.filter((product) =>
             newFS.products.includes(product._id)
@@ -109,11 +108,9 @@ exports.addFlashSale = async (req, res, next) => {
                     : "*"
             } *`;
             // if not wait when the start time hit
-            console.log(stringTime);
             const activeFs = cron.schedule(
                 stringTime,
                 async () => {
-                    console.log(newFS, "time up!");
                     newFS.isActive = true;
                     await newFS.save();
                     saleProducts.forEach(async (product) => {

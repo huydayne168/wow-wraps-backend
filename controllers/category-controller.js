@@ -46,7 +46,6 @@ exports.addCategory = async (req, res, next) => {
 exports.deleteCategory = async (req, res, next) => {
     try {
         const categoryId = req.query.categoryId;
-        console.log(categoryId);
         const products = await Product.find({ category: categoryId });
         if (products[0]) {
             return res.sendStatus(409);

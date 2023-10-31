@@ -15,7 +15,6 @@ exports.loginHandler = (role) => {
         try {
             const email = req.body.email;
             const password = req.body.password;
-            console.log(password);
             const inputError = validationResult(req);
             if (!inputError.isEmpty()) {
                 return res.status(400).json({

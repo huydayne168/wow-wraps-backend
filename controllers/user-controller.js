@@ -39,7 +39,6 @@ exports.postSignup = async (req, res, next) => {
                 const hashedPassword = await bcryptjs.hash(password, 12);
                 const userRole = await Role.find({ name: "user" });
                 const userRoleId = userRole[0]._id;
-                console.log(userRoleId);
                 const newUser = new User({
                     userName,
                     password: hashedPassword,
@@ -60,7 +59,6 @@ exports.postSignup = async (req, res, next) => {
         }
 
         // check if any input value is invalid:
-        console.log(req.body);
         const inputError = validationResult(req);
         if (!inputError.isEmpty()) {
             return res.status(400).json({
@@ -190,7 +188,6 @@ exports.getUsers = async (req, res, next) => {
             .populate("roleId")
             .populate("checkout")
             .sort({ createdAt: -1 });
-        console.log("res", allUsers[1].checkout[0]);
         const search = req.query;
         return res.status(200).json(applyFilter(allUsers, search));
     } catch (error) {
@@ -223,7 +220,6 @@ exports.getCart = async (req, res, next) => {
     try {
         const userId = req.query.userId;
         const user = await User.findById(userId).populate("cart.product");
-        console.log(userId);
         if (!user) return res.sendStatus(403);
         return res.json(user.cart);
     } catch (error) {
@@ -237,7 +233,6 @@ exports.addToCart = async (req, res, next) => {
         const { userId, product: productId, quantity } = req.body;
         const user = await User.findById(userId);
         if (!user) return res.sendStatus(403);
-        console.log(productId);
         // Is this product already exist in cart?
         const isExist = user.cart.some(
             (cartItem) => cartItem.product.toString() === productId
@@ -268,7 +263,6 @@ exports.updateCart = async (req, res, next) => {
     try {
         const newCart = req.body.cart;
         const userId = req.body.userId;
-        console.log(userId);
         const user = await User.findById(userId);
         if (!user) return res.sendStatus(403);
         user.cart = newCart;
@@ -286,7 +280,6 @@ exports.deleteCart = async (req, res, next) => {
         const cartId = req.query.cartId;
         const userId = req.query.userId;
         const user = await User.findById(userId);
-        console.log(cartId);
         if (!user) return res.sendStatus(403);
         const newCart = user.cart.filter(
             (item) => item._id.toString() !== cartId

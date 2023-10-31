@@ -18,7 +18,6 @@ exports.addVoucher = async (req, res, next) => {
             code: code,
             isDeleted: false,
         });
-        console.log(existedVoucherCode, "here");
         if (existedVoucherCode[0]) {
             return res.sendStatus(409);
         }
@@ -32,7 +31,6 @@ exports.addVoucher = async (req, res, next) => {
             isDeleted: false,
         });
         await newVoucher.save();
-        console.log(end);
         const endTime = new Date(end);
         const now = new Date();
         const stringEndTime = `${endTime.getMinutes()} ${
@@ -40,7 +38,6 @@ exports.addVoucher = async (req, res, next) => {
         } ${endTime.getDate() > now.getDate() ? endTime.getDate() : "*"} ${
             endTime.getMonth() > now.getMonth() ? start.getMonth() + 1 : "*"
         } *`;
-        console.log(stringEndTime, ">>>>here");
         const voucherTimeUp = cron.schedule(stringEndTime, async () => {
             newVoucher.isActive = false;
             await newVoucher.save();
@@ -134,7 +131,6 @@ exports.applyVoucher = async (req, res, next) => {
     try {
         const code = req.query.code;
         const vouchers = await Voucher.find({ code: code, isDeleted: false });
-        console.log(vouchers);
         if (!vouchers[0]) {
             return res.sendStatus(409);
         }

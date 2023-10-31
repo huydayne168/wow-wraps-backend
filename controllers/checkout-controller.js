@@ -23,12 +23,11 @@ exports.addCheckout = async (req, res, next) => {
         let finalTotal = total;
 
         if (voucher) {
-            console.log(voucher);
             const foundVoucher = await Voucher.find({
                 code: voucher.code,
                 isDeleted: false,
             });
-            console.log(foundVoucher);
+
             if (foundVoucher) {
                 finalTotal = (
                     (Number(total) *
@@ -39,7 +38,6 @@ exports.addCheckout = async (req, res, next) => {
                 res.sendStatus(409);
             }
             foundVoucher[0].quantity = foundVoucher[0].quantity - 1;
-            console.log(foundVoucher[0].quantity);
             if (foundVoucher[0].quantity === 0) {
                 foundVoucher[0].isActive = false;
             }
@@ -115,9 +113,9 @@ function applyFilters(
         sortPaymentMethod,
         sortStatus,
         sortTotal,
+        userIdQuery,
     }
 ) {
-    console.log(sortStatus);
     const filteredCheckouts = [];
     for (const checkout of checkouts) {
         if (_idQuery && !checkout._id.toString().includes(_idQuery)) {
@@ -130,6 +128,10 @@ function applyFilters(
                 .toLowerCase()
                 .includes(userQuery.toLowerCase())
         ) {
+            continue;
+        }
+
+        if (userIdQuery && checkout.user._id.toString() !== userIdQuery) {
             continue;
         }
 
@@ -158,25 +160,23 @@ function applyFilters(
 
         if (
             sortStatus &&
-            checkout.status.toUpperCase() !== sortStatus.toUpperCase()
+            checkout.status.toUpperCase() !== sortStatus.toUpperCase() &&
+            sortStatus.toUpperCase() !== "ALL"
         ) {
             continue;
         }
 
         filteredCheckouts.push(checkout);
     }
-    if (sortDate) {
+
+    if (sortDate && sortDate !== "default") {
         filteredCheckouts.sort((checkoutA, checkoutB) => {
-            console.log(
-                checkoutA.createdAt.getTime(),
-                checkoutB.createdAt.getTime()
-            );
-            if (JSON.parse(sortDate)) {
+            if (sortDate === "latest") {
                 return (
                     checkoutB.createdAt.getTime() -
                     checkoutA.createdAt.getTime()
                 );
-            } else {
+            } else if (sortDate === "earliest") {
                 return (
                     checkoutA.createdAt.getTime() -
                     checkoutB.createdAt.getTime()
@@ -185,15 +185,16 @@ function applyFilters(
         });
     }
 
-    if (sortTotal) {
+    if (sortTotal && sortTotal !== "default") {
         filteredCheckouts.sort((checkoutA, checkoutB) => {
-            if (JSON.parse(sortTotal)) {
+            if (sortTotal === "highest") {
                 return checkoutB.total - checkoutA.total;
-            } else {
+            } else if (sortTotal === "lowest") {
                 return checkoutA.total - checkoutB.total;
             }
         });
     }
+
     if (!page) {
         return {
             checkouts: filteredCheckouts,
@@ -242,9 +243,8 @@ exports.updateCheckout = async (req, res, next) => {
     try {
         const checkoutId = req.body.checkoutId;
         const status = req.body.status;
-        console.log(checkoutId, status);
         const checkout = await Checkout.findById(checkoutId);
-        checkout.status = status;
+        checkout.status = status.toUpperCase();
         await checkout.save();
         return res.sendStatus(204);
     } catch (error) {
@@ -256,7 +256,6 @@ exports.updateCheckout = async (req, res, next) => {
 exports.deleteCheckout = async (req, res, next) => {
     try {
         const checkoutId = req.query.checkoutId;
-        console.log(checkoutId);
         const checkout = await Checkout.findById(checkoutId);
         checkout.isDeleted = true;
         await checkout.save();
